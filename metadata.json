@@ -1,0 +1,6 @@
+{
+  "name": "MLBB Ranked Companion",
+  "description": "Professional Mobile Legends: Bang Bang ranked matchmaking analysis, draft assistant, hero database, and statistical companion.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
