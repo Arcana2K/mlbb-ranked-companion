@@ -3,6 +3,7 @@ import { Hero, Lane, Role, RecommendationScore, ScoringWeights, PlayerProfile } 
 import { HEROES, HERO_MAP } from '../data/heroes';
 import { RecommendationEngine } from '../services/recommendationEngine';
 import { RoleBadge } from '../components/common/RoleBadge';
+import { HeroAvatar } from '../components/common/HeroAvatar';
 import { DataDisclaimer } from '../components/common/DataDisclaimer';
 import {
   Crosshair,
@@ -232,10 +233,9 @@ export const DraftAssistant: React.FC<DraftAssistantProps> = ({ weights, profile
                   >
                     {hero ? (
                       <>
-                        <img
-                          src={hero.avatar}
-                          alt={hero.name}
-                          className="w-full h-full object-cover grayscale opacity-60"
+                        <HeroAvatar
+                          hero={hero}
+                          className="w-full h-full rounded-none grayscale opacity-60"
                         />
                         <div className="absolute inset-0 flex items-center justify-center bg-black/40">
                           <Ban className="w-3.5 h-3.5 text-zinc-400" />
@@ -279,10 +279,9 @@ export const DraftAssistant: React.FC<DraftAssistantProps> = ({ weights, profile
                   >
                     {hero ? (
                       <>
-                        <img
-                          src={hero.avatar}
-                          alt={hero.name}
-                          className="w-full h-full object-cover rounded"
+                        <HeroAvatar
+                          hero={hero}
+                          className="w-full h-full rounded"
                         />
                         <div className="absolute bottom-0 inset-x-0 p-1 bg-black/80 text-center">
                           <p className="text-[10px] font-medium text-zinc-100 truncate">{hero.name}</p>
@@ -360,10 +359,9 @@ export const DraftAssistant: React.FC<DraftAssistantProps> = ({ weights, profile
                   >
                     {hero ? (
                       <>
-                        <img
-                          src={hero.avatar}
-                          alt={hero.name}
-                          className="w-full h-full object-cover grayscale opacity-60"
+                        <HeroAvatar
+                          hero={hero}
+                          className="w-full h-full rounded-none grayscale opacity-60"
                         />
                         <div className="absolute inset-0 flex items-center justify-center bg-black/40">
                           <Ban className="w-3.5 h-3.5 text-zinc-400" />
@@ -407,10 +405,9 @@ export const DraftAssistant: React.FC<DraftAssistantProps> = ({ weights, profile
                   >
                     {hero ? (
                       <>
-                        <img
-                          src={hero.avatar}
-                          alt={hero.name}
-                          className="w-full h-full object-cover rounded"
+                        <HeroAvatar
+                          hero={hero}
+                          className="w-full h-full rounded"
                         />
                         <div className="absolute bottom-0 inset-x-0 p-1 bg-black/80 text-center">
                           <p className="text-[10px] font-medium text-zinc-100 truncate">{hero.name}</p>
@@ -471,11 +468,7 @@ export const DraftAssistant: React.FC<DraftAssistantProps> = ({ weights, profile
                 >
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2.5">
-                      <img
-                        src={hero.avatar}
-                        alt={hero.name}
-                        className="w-10 h-10 rounded object-cover border border-zinc-750"
-                      />
+                      <HeroAvatar hero={hero} size="lg" className="rounded" />
                       <div>
                         <div className="flex items-center gap-1.5">
                           <h4 className="text-xs font-semibold text-zinc-100">{hero.name}</h4>
@@ -609,11 +602,7 @@ export const DraftAssistant: React.FC<DraftAssistantProps> = ({ weights, profile
                   }`}
                 >
                   <div className="relative w-10 h-10 mb-1">
-                    <img
-                      src={hero.avatar}
-                      alt={hero.name}
-                      className="w-full h-full object-cover rounded border border-zinc-750"
-                    />
+                    <HeroAvatar hero={hero} size="lg" className="w-full h-full rounded" />
                     {isUnavailable && (
                       <div className="absolute inset-0 bg-black/60 rounded flex items-center justify-center">
                         <Ban className="w-4 h-4 text-zinc-400" />
@@ -643,11 +632,7 @@ export const DraftAssistant: React.FC<DraftAssistantProps> = ({ weights, profile
             </button>
 
             <div className="flex items-center gap-3">
-              <img
-                src={inspectedScore.hero.avatar}
-                alt={inspectedScore.hero.name}
-                className="w-12 h-12 rounded object-cover border border-zinc-750"
-              />
+              <HeroAvatar hero={inspectedScore.hero} size="lg" className="w-12 h-12 rounded" />
               <div>
                 <h3 className="text-sm font-semibold text-zinc-100 flex items-center gap-2">
                   <span>{inspectedScore.hero.name}</span>

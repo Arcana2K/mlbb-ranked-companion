@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { MatchRecord, Role, Lane } from '../types/mlbb';
 import { HEROES, HERO_MAP } from '../data/heroes';
 import { RoleBadge } from '../components/common/RoleBadge';
+import { HeroAvatar } from '../components/common/HeroAvatar';
 import { DataDisclaimer } from '../components/common/DataDisclaimer';
 import {
   Plus,
@@ -183,11 +184,7 @@ export const MatchHistory: React.FC<MatchHistoryProps> = ({
                     <td className="py-3 px-4 whitespace-nowrap">
                       <div className="flex items-center gap-2.5">
                         {hero && (
-                          <img
-                            src={hero.avatar}
-                            alt={hero.name}
-                            className="w-7 h-7 rounded object-cover border border-zinc-750 shrink-0"
-                          />
+                          <HeroAvatar hero={hero} size="sm" className="rounded shrink-0" />
                         )}
                         <div>
                           <p className="font-medium text-zinc-200">{hero?.name || match.heroId}</p>

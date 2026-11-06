@@ -4,6 +4,7 @@ import { HERO_MAP } from '../data/heroes';
 import { StatCard } from '../components/common/StatCard';
 import { RankBadge } from '../components/common/RankBadge';
 import { RoleBadge } from '../components/common/RoleBadge';
+import { HeroAvatar } from '../components/common/HeroAvatar';
 import { DataDisclaimer } from '../components/common/DataDisclaimer';
 import { ActivePage } from '../components/layout/Sidebar';
 import {
@@ -147,11 +148,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ profile, matches, onNaviga
                   className="flex items-center justify-between p-2.5 rounded-md bg-zinc-900/80 border border-zinc-800/80 hover:border-zinc-700 transition-colors"
                 >
                   <div className="flex items-center gap-2.5">
-                    <img
-                      src={hero.avatar}
-                      alt={hero.name}
-                      className="w-8 h-8 rounded object-cover border border-zinc-750"
-                    />
+                    <HeroAvatar hero={hero} size="md" className="rounded" />
                     <div>
                       <p className="text-xs font-medium text-zinc-200">{hero.name}</p>
                       <p className="text-[11px] text-zinc-500">{hero.primaryLane}</p>
@@ -213,11 +210,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ profile, matches, onNaviga
                       {isWin ? 'VICTORY' : 'DEFEAT'}
                     </span>
                     {hero && (
-                      <img
-                        src={hero.avatar}
-                        alt={hero.name}
-                        className="w-7 h-7 rounded object-cover border border-zinc-750"
-                      />
+                      <HeroAvatar hero={hero} size="sm" className="rounded" />
                     )}
                     <div>
                       <div className="flex items-center gap-2">

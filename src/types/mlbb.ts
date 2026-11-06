@@ -16,6 +16,24 @@ export type RankTier =
   | 'Mythical Glory'
   | 'Mythical Immortal';
 
+/**
+ * Statistical dataset model for MLBB heroes.
+ * Stored separately from static hero characteristics to prevent presenting
+ * unverified percentages as factual game data.
+ */
+export interface HeroStatisticalData {
+  winRate: number;
+  pickRate?: number;
+  banRate?: number;
+  source: string;
+  gameMode: string;
+  rankRange: string;
+  patchVersion: string;
+  lastUpdated: string;
+  sampleSize?: number;
+  isVerified: boolean;
+}
+
 export interface Hero {
   id: string;
   name: string;
@@ -27,12 +45,13 @@ export interface Hero {
   damageType: DamageType;
   difficulty: 'Easy' | 'Medium' | 'Hard';
   specialties: string[];
-  counters: string[]; // Hero IDs this hero counters
-  counteredBy: string[]; // Hero IDs that counter this hero
-  synergies: string[]; // Hero IDs this hero pairs well with
-  winRate: number; // Curated baseline win rate (e.g. 51.4%)
-  pickRate: number; // Pick rate (%)
-  banRate: number; // Ban rate (%)
+  // Matchup references
+  counters: string[]; // Hero IDs this hero counters (community reference)
+  counteredBy: string[]; // Hero IDs that counter this hero (community reference)
+  synergies: string[]; // Hero IDs this hero pairs well with (community reference)
+  matchupStatus: 'verified' | 'unverified_reference';
+  // Statistical dataset is optional; undefined indicates no verified dataset is attached
+  stats?: HeroStatisticalData;
   description: string;
   strengths: string[];
   weaknesses: string[];

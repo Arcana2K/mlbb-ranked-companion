@@ -3,6 +3,7 @@ import { MatchRecord, PlayerProfile, Role } from '../types/mlbb';
 import { HERO_MAP } from '../data/heroes';
 import { StatCard } from '../components/common/StatCard';
 import { RoleBadge } from '../components/common/RoleBadge';
+import { HeroAvatar } from '../components/common/HeroAvatar';
 import { DataDisclaimer } from '../components/common/DataDisclaimer';
 import {
   Percent,
@@ -238,11 +239,7 @@ export const Statistics: React.FC<StatisticsProps> = ({ matches }) => {
               >
                 <div className="flex items-center gap-2.5">
                   {item.hero && (
-                    <img
-                      src={item.hero.avatar}
-                      alt={item.hero.name}
-                      className="w-8 h-8 rounded object-cover border border-zinc-750"
-                    />
+                    <HeroAvatar hero={item.hero} size="md" className="rounded" />
                   )}
                   <div>
                     <h4 className="text-xs font-medium text-zinc-200">
