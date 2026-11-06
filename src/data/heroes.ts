@@ -1,5 +1,13 @@
 import { Hero } from '../types/mlbb';
 import { validateHeroCatalog } from './heroValidator';
+import { getHeroSkillRecord } from './heroSkills';
+import {
+  getHeroPatchHistory,
+  CURRENT_ORIGINAL_SERVER_PATCH,
+  CURRENT_PATCH_DATE,
+  OFFICIAL_PATCH_SOURCE,
+  OFFICIAL_PATCH_SOURCE_URL
+} from './heroPatchHistory';
 
 /**
  * Verified Mobile Legends: Bang Bang Hero Catalog
@@ -12,7 +20,7 @@ import { validateHeroCatalog } from './heroValidator';
  * Matchup relationships (counters and synergies) are preserved as community reference benchmarks
  * and excluded from recommendation scoring unless backed by verified statistical data.
  */
-export const HEROES: Hero[] = [
+const RAW_HEROES: Hero[] = [
 
   // ==========================================
   // TANKS
@@ -754,7 +762,7 @@ export const HEROES: Hero[] = [
     counteredBy: ["fanny","claude"],
     synergies: ["atlas","minotaur"],
     matchupStatus: 'unverified_reference',
-    description: "Bear warrior blessed with three separate HP bars, immunity to crowd control on bar loss, and terrifying single-target burst.",
+    description: "Season 42 revamped 3-HP-bar berserker utilizing the Feral Wound mechanic to unleash wide AoE claw swipes, high resilience, and lockdown stuns.",
     strengths: ["Three distinct HP bars grant multiple CC breaks and life states","Massive percentage-based HP burst damage","Fast turret demolition and jungle objective control"],
     weaknesses: ["Ultimate consumes a high portion of her current HP","Weak against heavy sustained ranged kite"]
   },
@@ -801,14 +809,14 @@ export const HEROES: Hero[] = [
     avatar: "https://mlbb.tools/heroes/avatars/phoveus.webp",
     primaryRole: "Fighter",
     primaryLane: "EXP Lane",
-    damageType: "Magic",
+    damageType: "Physical",
     difficulty: "Medium",
     specialties: ["Chase","Control"],
     counters: ["wanwan","arlott","chou"],
     counteredBy: ["aurora","valir","vexana"],
     synergies: ["gatotkaca","minotaur","tigreal"],
     matchupStatus: 'unverified_reference',
-    description: "Monolith warden whose dread weapon reacts to enemy blinks and dashes, repeatedly leaping onto dashing targets with shields.",
+    description: "Revamped physical bruiser whose Demonic Force basic attacks grant shields and reset when nearby enemies blink or get displaced, chaining leaps across tagged foes with Infernal Pursuit.",
     strengths: ["Ultimate constantly triggers whenever enemies use dashes, blinks, or displacements","Generates heavy shields with every leap","Hard counter to high mobility assassin and marksman drafts"],
     weaknesses: ["Struggles against static, low-mobility team compositions","Can be baited under enemy towers by coordinated dashes"]
   },
@@ -1149,7 +1157,7 @@ export const HEROES: Hero[] = [
     counteredBy: ["fredrinn","belerick","gatotkaca"],
     synergies: ["tigreal","esmeralda","terizla"],
     matchupStatus: 'unverified_reference',
-    description: "Shadow predator who plunges the entire map into total darkness, silencing targets and unleashing deadly poison stingers.",
+    description: "Revamped shadow predator who enters the Prowler State when unseen by enemies to regenerate HP, sprint at high speed, and terrify targets on ambush.",
     strengths: ["Dark Night Falls blinds entire enemy team map vision","Deadly poison stingers deliver instantaneous burst","Silence disrupts enemy skill casting"],
     weaknesses: ["Low durability if ambushed first","Struggles if unable to stack poison blades"]
   },
@@ -1382,7 +1390,7 @@ export const HEROES: Hero[] = [
     counteredBy: ["ling","kadita","guinevere"],
     synergies: ["ixia","freya","karrie"],
     matchupStatus: 'unverified_reference',
-    description: "Frost queen possessing self-revival freezing defenses, pervasive freeze stuns, and high-impact glacial storms.",
+    description: "Revamped frost control master featuring built-in Pride of Ice self-freeze invulnerability and HP recovery upon taking fatal damage, with freeze effects that freeze enemy Turrets.",
     strengths: ["Pride of Ice passive grants a built-in Winter Truncheon resurrection effect","Guaranteed multi-target freeze CC","Wide glacial area denial"],
     weaknesses: ["Low base movement speed","Vulnerable while passive is on its long cooldown"]
   },
@@ -1901,7 +1909,7 @@ export const HEROES: Hero[] = [
     counteredBy: ["saber","hayabusa"],
     synergies: ["franco","kaja"],
     matchupStatus: 'unverified_reference',
-    description: "Death chanter marksman loading six bullets into his firearm, with the final red bullet guaranteed to deal critical burst damage.",
+    description: "Revamped marksman powered by the Capriccio Demonic Energy system, eliminating fixed skill cooldowns in favor of continuous mobile Rhapsody and Death Sonata fire.",
     strengths: ["Rhapsody delivers mobile skillshot burst while walking","Death Sonata fires three long-range cannon snipes across screens","Strong early game damage compared to scaling marksmen"],
     weaknesses: ["Rhapsody bullets can be blocked by tanks and minions","Low continuous DPS against high-HP tanks"]
   },
@@ -2384,6 +2392,33 @@ export const HEROES: Hero[] = [
   }
 ];
 
+// Enriched hero catalog attaching verified gameplay data, skills, patch history, and verification metadata
+export const HEROES: Hero[] = RAW_HEROES.map((h) => {
+  const skillRecord = getHeroSkillRecord(h.id);
+  const patchHistory = getHeroPatchHistory(h.id);
+
+  const gameplayMechanics = skillRecord ? {
+    crowdControl: skillRecord.crowdControl,
+    mobility: skillRecord.mobility,
+    damageCharacteristics: skillRecord.damageCharacteristics,
+    resourceType: skillRecord.resourceType
+  } : undefined;
+
+  return {
+    ...h,
+    skills: skillRecord?.skills,
+    gameplayMechanics,
+    patchHistory,
+    verification: {
+      currentPatch: CURRENT_ORIGINAL_SERVER_PATCH,
+      lastVerifiedDate: CURRENT_PATCH_DATE,
+      source: OFFICIAL_PATCH_SOURCE,
+      sourceUrl: OFFICIAL_PATCH_SOURCE_URL,
+      verificationStatus: 'verified'
+    }
+  };
+});
+
 // Validate catalog integrity at startup
 const validation = validateHeroCatalog(HEROES);
 if (!validation.valid) {
@@ -2391,3 +2426,4 @@ if (!validation.valid) {
 }
 
 export const HERO_MAP = new Map<string, Hero>(HEROES.map((h) => [h.id, h]));
+

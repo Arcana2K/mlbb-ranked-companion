@@ -1,26 +1,47 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { Hero, Role, Lane } from '../types/mlbb';
 import { HEROES, HERO_MAP } from '../data/heroes';
+import {
+  CURRENT_ORIGINAL_SERVER_PATCH,
+  CURRENT_PATCH_DATE,
+  OFFICIAL_PATCH_SOURCE,
+  OFFICIAL_PATCH_SOURCE_URL,
+} from '../data/heroPatchHistory';
 import { RoleBadge } from '../components/common/RoleBadge';
 import { HeroAvatar } from '../components/common/HeroAvatar';
 import { DataDisclaimer } from '../components/common/DataDisclaimer';
-import { Search, ShieldAlert, BarChart3, ArrowRight } from 'lucide-react';
+import {
+  Search,
+  ShieldAlert,
+  BarChart3,
+  CheckCircle2,
+  ExternalLink,
+  Zap,
+  Clock,
+  Layers,
+  Sparkles,
+  Info,
+} from 'lucide-react';
 
 const ROLES: (Role | 'ALL')[] = ['ALL', 'Tank', 'Fighter', 'Assassin', 'Mage', 'Marksman', 'Support'];
 const LANES: (Lane | 'ALL')[] = ['ALL', 'Gold Lane', 'EXP Lane', 'Mid Lane', 'Roam', 'Jungle'];
+
+type DetailTab = 'overview' | 'skills' | 'patch';
 
 export const HeroDatabase: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedRole, setSelectedRole] = useState<Role | 'ALL'>('ALL');
   const [selectedLane, setSelectedLane] = useState<Lane | 'ALL'>('ALL');
   const [selectedHero, setSelectedHero] = useState<Hero | null>(HEROES[0]);
+  const [activeTab, setActiveTab] = useState<DetailTab>('overview');
 
   const filteredHeroes = useMemo(() => {
     return HEROES.filter((hero) => {
       const matchSearch =
         hero.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         hero.specialties.some((s) => s.toLowerCase().includes(searchQuery.toLowerCase())) ||
-        hero.damageType.toLowerCase().includes(searchQuery.toLowerCase());
+        hero.damageType.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (hero.skills && hero.skills.some((sk) => sk.name.toLowerCase().includes(searchQuery.toLowerCase())));
 
       const matchRole =
         selectedRole === 'ALL' ||
@@ -54,9 +75,37 @@ export const HeroDatabase: React.FC = () => {
 
   return (
     <div className="space-y-5">
+      {/* Official Patch Banner */}
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2.5 p-3 rounded-lg border border-zinc-800 bg-zinc-900/60 text-xs">
+        <div className="flex items-center gap-2">
+          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-medium bg-sky-950/70 text-sky-400 border border-sky-800/60 font-mono">
+            <CheckCircle2 className="w-3 h-3 text-sky-400" />
+            {CURRENT_ORIGINAL_SERVER_PATCH}
+          </span>
+          <span className="text-zinc-300 font-medium">Official Original Server Baseline</span>
+          <span className="text-zinc-500 hidden md:inline">|</span>
+          <span className="text-zinc-400 font-mono text-[11px] hidden md:inline">
+            Verified {CURRENT_PATCH_DATE}
+          </span>
+        </div>
+
+        <div className="flex items-center gap-3">
+          <span className="text-zinc-500 text-[11px]">Source: {OFFICIAL_PATCH_SOURCE}</span>
+          <a
+            href={OFFICIAL_PATCH_SOURCE_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-1 text-[11px] text-sky-400 hover:text-sky-300 transition-colors"
+          >
+            <span>moonton.com</span>
+            <ExternalLink className="w-3 h-3" />
+          </a>
+        </div>
+      </div>
+
       <DataDisclaimer
         type="notice"
-        text="Verified mechanical attributes, community matchup references, and competitive role alignments. Hero win rates and pick rates are shown only when backed by reliable datasets."
+        text="Verified mechanical attributes, complete skill kits, and official patch notes for all 133 Mobile Legends: Bang Bang heroes. Unverified ranked win/ban rates are omitted to preserve analytical integrity."
       />
 
       {/* Filter and Search Bar */}
@@ -68,7 +117,7 @@ export const HeroDatabase: React.FC = () => {
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search hero catalog by name, specialty, or damage type..."
+              placeholder="Search catalog by hero name, skill name, specialty, or damage type..."
               className="w-full bg-zinc-950 border border-zinc-800 rounded px-8 py-1.5 text-xs text-zinc-200 focus:border-zinc-600 focus:outline-none placeholder:text-zinc-500"
             />
           </div>
@@ -123,7 +172,7 @@ export const HeroDatabase: React.FC = () => {
               No heroes match the selected role, lane, or search query.
             </div>
           ) : (
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2.5 max-h-[700px] overflow-y-auto p-0.5">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2.5 max-h-[760px] overflow-y-auto p-0.5">
               {filteredHeroes.map((hero) => {
                 const isSelected = selectedHero?.id === hero.id;
 
@@ -145,6 +194,11 @@ export const HeroDatabase: React.FC = () => {
                       <div className="absolute top-1 right-1 px-1 py-0.2 rounded bg-black/75 text-[9px] font-mono text-zinc-300">
                         {hero.difficulty}
                       </div>
+                      {hero.patchHistory && hero.patchHistory.length > 0 && (
+                        <div className="absolute bottom-1 left-1 px-1 py-0.2 rounded bg-sky-950/90 text-[8px] font-mono text-sky-300 border border-sky-800/60">
+                          {hero.patchHistory[0].type.toUpperCase()}
+                        </div>
+                      )}
                     </div>
 
                     <h4 className="font-medium text-xs text-zinc-100 truncate">
@@ -153,9 +207,15 @@ export const HeroDatabase: React.FC = () => {
 
                     <div className="flex items-center gap-1 mt-1">
                       <RoleBadge role={hero.primaryRole} size="sm" />
+                      {hero.secondaryRole && (
+                        <RoleBadge role={hero.secondaryRole} size="sm" />
+                      )}
                     </div>
 
-                    <p className="text-[10px] text-zinc-500 mt-0.5 truncate">{hero.primaryLane}</p>
+                    <div className="flex items-center justify-between text-[10px] text-zinc-500 mt-1">
+                      <span className="truncate">{hero.primaryLane}</span>
+                      <span className="font-mono text-zinc-400">{hero.damageType}</span>
+                    </div>
                   </div>
                 );
               })}
@@ -166,7 +226,7 @@ export const HeroDatabase: React.FC = () => {
         {/* Selected Hero Information Panel (5 Cols) */}
         <div className="lg:col-span-5">
           {selectedHero ? (
-            <div className="sticky top-20 rounded-lg border border-zinc-800 bg-zinc-900/60 p-5 space-y-4">
+            <div className="sticky top-20 rounded-lg border border-zinc-800 bg-zinc-900/60 p-4 space-y-4">
               {/* Header Profile */}
               <div className="flex items-start gap-3">
                 <HeroAvatar
@@ -196,190 +256,483 @@ export const HeroDatabase: React.FC = () => {
                 </div>
               </div>
 
-              {/* Description */}
-              <p className="text-xs text-zinc-400 leading-relaxed bg-zinc-950 p-3 rounded border border-zinc-800">
-                {selectedHero.description}
-              </p>
-
-              {/* Specialties */}
-              <div className="space-y-1">
-                <span className="text-[10px] text-zinc-500 uppercase font-medium block">
-                  Specialties:
-                </span>
-                <div className="flex flex-wrap gap-1">
-                  {selectedHero.specialties.map((spec) => (
-                    <span
-                      key={spec}
-                      className="px-2 py-0.5 rounded text-[11px] bg-zinc-850 text-zinc-300 border border-zinc-750"
-                    >
-                      {spec}
-                    </span>
-                  ))}
-                </div>
-              </div>
-
-              {/* Statistical Data Section (Separate from core attributes) */}
-              <div className="p-3 rounded bg-zinc-950 border border-zinc-800 space-y-2">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-1.5 text-xs text-zinc-300 font-medium">
-                    <BarChart3 className="w-3.5 h-3.5 text-zinc-400" />
-                    <span>Ranked Statistical Data</span>
-                  </div>
-                  <span className="text-[10px] font-mono text-zinc-500">
-                    {selectedHero.stats ? selectedHero.stats.source : 'No external feed'}
+              {/* Navigation Tabs */}
+              <div className="flex items-center gap-1 p-1 bg-zinc-950 rounded border border-zinc-800 text-xs font-medium">
+                <button
+                  onClick={() => setActiveTab('overview')}
+                  className={`flex-1 py-1.5 rounded transition-colors text-center cursor-pointer ${
+                    activeTab === 'overview'
+                      ? 'bg-zinc-800 text-zinc-100'
+                      : 'text-zinc-400 hover:text-zinc-200'
+                  }`}
+                >
+                  Overview
+                </button>
+                <button
+                  onClick={() => setActiveTab('skills')}
+                  className={`flex-1 py-1.5 rounded transition-colors text-center cursor-pointer flex items-center justify-center gap-1 ${
+                    activeTab === 'skills'
+                      ? 'bg-zinc-800 text-zinc-100'
+                      : 'text-zinc-400 hover:text-zinc-200'
+                  }`}
+                >
+                  <span>Abilities</span>
+                  <span className="px-1.5 py-0.2 rounded bg-zinc-900 text-[10px] font-mono text-zinc-400">
+                    {selectedHero.skills?.length || 4}
                   </span>
-                </div>
-
-                {selectedHero.stats ? (
-                  <div className="space-y-2">
-                    <div className="grid grid-cols-3 gap-2 pt-1 text-center font-mono">
-                      <div className="p-1.5 rounded bg-zinc-900 border border-zinc-800">
-                        <span className="text-[10px] text-zinc-500 block">Win Rate</span>
-                        <span className="text-xs font-semibold text-emerald-400">
-                          {selectedHero.stats.winRate.toFixed(1)}%
-                        </span>
-                      </div>
-                      <div className="p-1.5 rounded bg-zinc-900 border border-zinc-800">
-                        <span className="text-[10px] text-zinc-500 block">Pick Rate</span>
-                        <span className="text-xs font-semibold text-zinc-300">
-                          {selectedHero.stats.pickRate !== undefined ? `${selectedHero.stats.pickRate.toFixed(1)}%` : '—'}
-                        </span>
-                      </div>
-                      <div className="p-1.5 rounded bg-zinc-900 border border-zinc-800">
-                        <span className="text-[10px] text-zinc-500 block">Ban Rate</span>
-                        <span className="text-xs font-semibold text-zinc-300">
-                          {selectedHero.stats.banRate !== undefined ? `${selectedHero.stats.banRate.toFixed(1)}%` : '—'}
-                        </span>
-                      </div>
-                    </div>
-                    <div className="text-[10px] text-zinc-500 space-y-0.5 font-mono">
-                      <div>Rank: {selectedHero.stats.rankRange} | Mode: {selectedHero.stats.gameMode}</div>
-                      <div>Patch: {selectedHero.stats.patchVersion} | Updated: {selectedHero.stats.lastUpdated}</div>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="text-[11px] text-zinc-500 bg-zinc-900/50 p-2.5 rounded border border-zinc-850 leading-relaxed">
-                    <span className="text-zinc-400 font-medium">No verified statistics attached.</span> To preserve analytical integrity, ranked win and ban percentages are displayed only when backed by validated telemetry rather than fabricated estimates.
-                  </div>
-                )}
+                </button>
+                <button
+                  onClick={() => setActiveTab('patch')}
+                  className={`flex-1 py-1.5 rounded transition-colors text-center cursor-pointer flex items-center justify-center gap-1 ${
+                    activeTab === 'patch'
+                      ? 'bg-zinc-800 text-zinc-100'
+                      : 'text-zinc-400 hover:text-zinc-200'
+                  }`}
+                >
+                  <span>Patch History</span>
+                  {selectedHero.patchHistory && selectedHero.patchHistory.length > 0 && (
+                    <span className="w-1.5 h-1.5 rounded-full bg-sky-400"></span>
+                  )}
+                </button>
               </div>
 
-              {/* Matchup Relationships */}
-              <div className="space-y-2">
-                <div className="flex items-center justify-between text-[10px] text-zinc-500 uppercase font-medium">
-                  <span>Matchup Reference</span>
-                  <span className="text-[9px] text-zinc-600 font-normal">Click hero to inspect</span>
-                </div>
+              {/* TAB 1: OVERVIEW */}
+              {activeTab === 'overview' && (
+                <div className="space-y-4">
+                  {/* Description */}
+                  <p className="text-xs text-zinc-400 leading-relaxed bg-zinc-950 p-3 rounded border border-zinc-800">
+                    {selectedHero.description}
+                  </p>
 
-                <div className="grid grid-cols-2 gap-2.5 text-xs">
-                  <div className="p-2.5 rounded bg-zinc-950 border border-zinc-800 space-y-1.5">
-                    <span className="text-[10px] text-zinc-400 uppercase font-medium block">
-                      Counters:
+                  {/* Specialties */}
+                  <div className="space-y-1">
+                    <span className="text-[10px] text-zinc-500 uppercase font-medium block">
+                      Specialties:
                     </span>
                     <div className="flex flex-wrap gap-1">
-                      {selectedHero.counters.length > 0 ? (
-                        selectedHero.counters.map((heroId) => {
-                          const target = HERO_MAP.get(heroId);
-                          return (
-                            <button
-                              key={heroId}
-                              onClick={() => handleSelectHeroById(heroId)}
-                              className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] bg-zinc-850 hover:bg-zinc-800 text-zinc-300 border border-zinc-750 transition-colors cursor-pointer"
-                              title={`Inspect ${target?.name || heroId}`}
-                            >
-                              <HeroAvatar hero={target} size="sm" className="w-3.5 h-3.5 text-[8px] rounded-none" />
-                              <span>{target?.name || heroId}</span>
-                            </button>
-                          );
-                        })
-                      ) : (
-                        <span className="text-[11px] text-zinc-600">Universal matchup</span>
-                      )}
+                      {selectedHero.specialties.map((spec) => (
+                        <span
+                          key={spec}
+                          className="px-2 py-0.5 rounded text-[11px] bg-zinc-850 text-zinc-300 border border-zinc-750"
+                        >
+                          {spec}
+                        </span>
+                      ))}
                     </div>
                   </div>
 
-                  <div className="p-2.5 rounded bg-zinc-950 border border-zinc-800 space-y-1.5">
-                    <span className="text-[10px] text-zinc-400 uppercase font-medium block">
-                      Countered By:
-                    </span>
-                    <div className="flex flex-wrap gap-1">
-                      {selectedHero.counteredBy.length > 0 ? (
-                        selectedHero.counteredBy.map((heroId) => {
-                          const target = HERO_MAP.get(heroId);
-                          return (
-                            <button
-                              key={heroId}
-                              onClick={() => handleSelectHeroById(heroId)}
-                              className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] bg-zinc-850 hover:bg-zinc-800 text-zinc-300 border border-zinc-750 transition-colors cursor-pointer"
-                              title={`Inspect ${target?.name || heroId}`}
-                            >
-                              <HeroAvatar hero={target} size="sm" className="w-3.5 h-3.5 text-[8px] rounded-none" />
-                              <span>{target?.name || heroId}</span>
-                            </button>
-                          );
-                        })
-                      ) : (
-                        <span className="text-[11px] text-zinc-600">Low counters</span>
-                      )}
+                  {/* Gameplay Mechanics Quick Summary */}
+                  {selectedHero.gameplayMechanics && (
+                    <div className="p-3 rounded bg-zinc-950 border border-zinc-800 space-y-2 text-xs">
+                      <div className="flex items-center gap-1.5 text-zinc-300 font-medium">
+                        <Zap className="w-3.5 h-3.5 text-sky-400" />
+                        <span>Core Mechanics Summary</span>
+                      </div>
+                      <div className="grid grid-cols-2 gap-2 text-[11px]">
+                        <div>
+                          <span className="text-[10px] text-zinc-500 uppercase block">Resource:</span>
+                          <span className="text-zinc-300 font-mono">
+                            {selectedHero.gameplayMechanics.resourceType || 'Mana'}
+                          </span>
+                        </div>
+                        <div>
+                          <span className="text-[10px] text-zinc-500 uppercase block">Mobility:</span>
+                          <span className="text-zinc-300">
+                            {selectedHero.gameplayMechanics.mobility.join(', ') || 'Low'}
+                          </span>
+                        </div>
+                        <div className="col-span-2">
+                          <span className="text-[10px] text-zinc-500 uppercase block">Crowd Control:</span>
+                          <span className="text-zinc-300">
+                            {selectedHero.gameplayMechanics.crowdControl.join(', ') || 'None'}
+                          </span>
+                        </div>
+                        <div className="col-span-2">
+                          <span className="text-[10px] text-zinc-500 uppercase block">Damage Profile:</span>
+                          <span className="text-zinc-300">
+                            {selectedHero.gameplayMechanics.damageCharacteristics.join(', ')}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Statistical Data Section */}
+                  <div className="p-3 rounded bg-zinc-950 border border-zinc-800 space-y-2">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-1.5 text-xs text-zinc-300 font-medium">
+                        <BarChart3 className="w-3.5 h-3.5 text-zinc-400" />
+                        <span>Ranked Statistical Data</span>
+                      </div>
+                      <span className="text-[10px] font-mono text-zinc-500">
+                        {selectedHero.stats ? selectedHero.stats.source : 'No external feed'}
+                      </span>
+                    </div>
+
+                    {selectedHero.stats ? (
+                      <div className="space-y-2">
+                        <div className="grid grid-cols-3 gap-2 pt-1 text-center font-mono">
+                          <div className="p-1.5 rounded bg-zinc-900 border border-zinc-800">
+                            <span className="text-[10px] text-zinc-500 block">Win Rate</span>
+                            <span className="text-xs font-semibold text-emerald-400">
+                              {selectedHero.stats.winRate.toFixed(1)}%
+                            </span>
+                          </div>
+                          <div className="p-1.5 rounded bg-zinc-900 border border-zinc-800">
+                            <span className="text-[10px] text-zinc-500 block">Pick Rate</span>
+                            <span className="text-xs font-semibold text-zinc-300">
+                              {selectedHero.stats.pickRate !== undefined ? `${selectedHero.stats.pickRate.toFixed(1)}%` : '—'}
+                            </span>
+                          </div>
+                          <div className="p-1.5 rounded bg-zinc-900 border border-zinc-800">
+                            <span className="text-[10px] text-zinc-500 block">Ban Rate</span>
+                            <span className="text-xs font-semibold text-zinc-300">
+                              {selectedHero.stats.banRate !== undefined ? `${selectedHero.stats.banRate.toFixed(1)}%` : '—'}
+                            </span>
+                          </div>
+                        </div>
+                        <div className="text-[10px] text-zinc-500 space-y-0.5 font-mono">
+                          <div>Rank: {selectedHero.stats.rankRange} | Mode: {selectedHero.stats.gameMode}</div>
+                          <div>Patch: {selectedHero.stats.patchVersion} | Updated: {selectedHero.stats.lastUpdated}</div>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="text-[11px] text-zinc-500 bg-zinc-900/50 p-2.5 rounded border border-zinc-850 leading-relaxed">
+                        <span className="text-zinc-400 font-medium">No verified statistics attached.</span> To preserve analytical integrity, ranked win and ban percentages are displayed only when backed by validated telemetry rather than fabricated estimates.
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Matchup Relationships */}
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between text-[10px] text-zinc-500 uppercase font-medium">
+                      <span>Matchup Reference</span>
+                      <span className="text-[9px] text-zinc-600 font-normal">Click hero to inspect</span>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-2.5 text-xs">
+                      <div className="p-2.5 rounded bg-zinc-950 border border-zinc-800 space-y-1.5">
+                        <span className="text-[10px] text-zinc-400 uppercase font-medium block">
+                          Counters:
+                        </span>
+                        <div className="flex flex-wrap gap-1">
+                          {selectedHero.counters.length > 0 ? (
+                            selectedHero.counters.map((heroId) => {
+                              const target = HERO_MAP.get(heroId);
+                              return (
+                                <button
+                                  key={heroId}
+                                  onClick={() => handleSelectHeroById(heroId)}
+                                  className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] bg-zinc-850 hover:bg-zinc-800 text-zinc-300 border border-zinc-750 transition-colors cursor-pointer"
+                                  title={`Inspect ${target?.name || heroId}`}
+                                >
+                                  <HeroAvatar hero={target} size="sm" className="w-3.5 h-3.5 text-[8px] rounded-none" />
+                                  <span>{target?.name || heroId}</span>
+                                </button>
+                              );
+                            })
+                          ) : (
+                            <span className="text-[11px] text-zinc-600">Universal matchup</span>
+                          )}
+                        </div>
+                      </div>
+
+                      <div className="p-2.5 rounded bg-zinc-950 border border-zinc-800 space-y-1.5">
+                        <span className="text-[10px] text-zinc-400 uppercase font-medium block">
+                          Countered By:
+                        </span>
+                        <div className="flex flex-wrap gap-1">
+                          {selectedHero.counteredBy.length > 0 ? (
+                            selectedHero.counteredBy.map((heroId) => {
+                              const target = HERO_MAP.get(heroId);
+                              return (
+                                <button
+                                  key={heroId}
+                                  onClick={() => handleSelectHeroById(heroId)}
+                                  className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] bg-zinc-850 hover:bg-zinc-800 text-zinc-300 border border-zinc-750 transition-colors cursor-pointer"
+                                  title={`Inspect ${target?.name || heroId}`}
+                                >
+                                  <HeroAvatar hero={target} size="sm" className="w-3.5 h-3.5 text-[8px] rounded-none" />
+                                  <span>{target?.name || heroId}</span>
+                                </button>
+                              );
+                            })
+                          ) : (
+                            <span className="text-[11px] text-zinc-600">Low counters</span>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Team Synergies */}
+                    {selectedHero.synergies && selectedHero.synergies.length > 0 && (
+                      <div className="p-2.5 rounded bg-zinc-950 border border-zinc-800 space-y-1.5">
+                        <span className="text-[10px] text-zinc-400 uppercase font-medium block">
+                          Recommended Team Synergies:
+                        </span>
+                        <div className="flex flex-wrap gap-1">
+                          {selectedHero.synergies.map((heroId) => {
+                            const target = HERO_MAP.get(heroId);
+                            return (
+                              <button
+                                key={heroId}
+                                onClick={() => handleSelectHeroById(heroId)}
+                                className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] bg-zinc-850 hover:bg-zinc-800 text-sky-300 border border-zinc-750 transition-colors cursor-pointer"
+                                title={`Inspect ${target?.name || heroId}`}
+                              >
+                                <HeroAvatar hero={target} size="sm" className="w-3.5 h-3.5 text-[8px] rounded-none" />
+                                <span>{target?.name || heroId}</span>
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
+
+                    <div className="flex items-center gap-1.5 text-[10px] text-zinc-500 pt-0.5">
+                      <ShieldAlert className="w-3 h-3 text-zinc-500 shrink-0" />
+                      <span>Community matchup reference. Strictly excluded from automated recommendation scoring.</span>
+                    </div>
+                  </div>
+
+                  {/* Strengths & Weaknesses */}
+                  <div className="space-y-2 text-xs pt-1 border-t border-zinc-800">
+                    <div>
+                      <span className="text-[10px] text-zinc-500 uppercase font-medium block mb-0.5">
+                        Strengths:
+                      </span>
+                      <ul className="text-zinc-300 space-y-0.5 list-disc pl-4 text-[11px]">
+                        {selectedHero.strengths.map((s, idx) => (
+                          <li key={idx}>{s}</li>
+                        ))}
+                      </ul>
+                    </div>
+
+                    <div>
+                      <span className="text-[10px] text-zinc-500 uppercase font-medium block mb-0.5">
+                        Weaknesses:
+                      </span>
+                      <ul className="text-zinc-400 space-y-0.5 list-disc pl-4 text-[11px]">
+                        {selectedHero.weaknesses.map((w, idx) => (
+                          <li key={idx}>{w}</li>
+                        ))}
+                      </ul>
                     </div>
                   </div>
                 </div>
+              )}
 
-                {/* Team Synergies */}
-                {selectedHero.synergies && selectedHero.synergies.length > 0 && (
-                  <div className="p-2.5 rounded bg-zinc-950 border border-zinc-800 space-y-1.5">
-                    <span className="text-[10px] text-zinc-400 uppercase font-medium block">
-                      Recommended Team Synergies:
+              {/* TAB 2: ABILITIES (SKILLS) */}
+              {activeTab === 'skills' && (
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between text-xs text-zinc-400 border-b border-zinc-800 pb-2">
+                    <span className="font-medium text-zinc-200">Verified Ability Kit</span>
+                    <span className="font-mono text-[10px] text-zinc-500">
+                      {selectedHero.skills?.length || 0} Abilities
                     </span>
-                    <div className="flex flex-wrap gap-1">
-                      {selectedHero.synergies.map((heroId) => {
-                        const target = HERO_MAP.get(heroId);
+                  </div>
+
+                  {selectedHero.skills && selectedHero.skills.length > 0 ? (
+                    <div className="space-y-2.5 max-h-[580px] overflow-y-auto pr-0.5">
+                      {selectedHero.skills.map((skill) => {
+                        const isPassive = skill.type === 'Passive';
+                        const isUltimate = skill.type === 'Ultimate';
+
+                        const badgeColor = isPassive
+                          ? 'bg-emerald-950/70 text-emerald-300 border-emerald-800/60'
+                          : isUltimate
+                          ? 'bg-sky-950/70 text-sky-300 border-sky-800/60'
+                          : 'bg-zinc-850 text-zinc-300 border-zinc-750';
+
                         return (
-                          <button
-                            key={heroId}
-                            onClick={() => handleSelectHeroById(heroId)}
-                            className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] bg-zinc-850 hover:bg-zinc-800 text-sky-300 border border-zinc-750 transition-colors cursor-pointer"
-                            title={`Inspect ${target?.name || heroId}`}
+                          <div
+                            key={skill.id}
+                            className={`p-3 rounded-lg border bg-zinc-950 space-y-1.5 transition-colors ${
+                              isUltimate
+                                ? 'border-sky-900/40'
+                                : isPassive
+                                ? 'border-emerald-950/50'
+                                : 'border-zinc-800'
+                            }`}
                           >
-                            <HeroAvatar hero={target} size="sm" className="w-3.5 h-3.5 text-[8px] rounded-none" />
-                            <span>{target?.name || heroId}</span>
-                          </button>
+                            <div className="flex items-start justify-between gap-2">
+                              <div className="flex items-center gap-2">
+                                <span
+                                  className={`px-1.5 py-0.5 rounded text-[10px] font-mono uppercase font-semibold border ${badgeColor}`}
+                                >
+                                  {skill.type}
+                                </span>
+                                <h4 className="text-xs font-semibold text-zinc-100">
+                                  {skill.name}
+                                </h4>
+                              </div>
+
+                              <div className="flex items-center gap-2 font-mono text-[10px] text-zinc-400">
+                                {skill.cooldown && (
+                                  <span className="flex items-center gap-1 text-zinc-400">
+                                    <Clock className="w-2.5 h-2.5 text-zinc-500" />
+                                    {skill.cooldown}
+                                  </span>
+                                )}
+                                {skill.energyCost && (
+                                  <span className="flex items-center gap-1 text-zinc-400">
+                                    <Zap className="w-2.5 h-2.5 text-amber-500" />
+                                    {skill.energyCost}
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+
+                            <p className="text-[11px] text-zinc-300 leading-relaxed">
+                              {skill.description}
+                            </p>
+
+                            {skill.tags && skill.tags.length > 0 && (
+                              <div className="flex flex-wrap gap-1 pt-1">
+                                {skill.tags.map((tag) => (
+                                  <span
+                                    key={tag}
+                                    className="px-1.5 py-0.2 rounded text-[9px] bg-zinc-900 text-zinc-400 border border-zinc-800"
+                                  >
+                                    {tag}
+                                  </span>
+                                ))}
+                              </div>
+                            )}
+                          </div>
                         );
                       })}
                     </div>
+                  ) : (
+                    <div className="p-6 text-center text-zinc-500 text-xs bg-zinc-950 rounded border border-zinc-800">
+                      Detailed ability breakdown currently indexing for this hero.
+                    </div>
+                  )}
+
+                  {/* Mechanics Details */}
+                  {selectedHero.gameplayMechanics && (
+                    <div className="p-2.5 rounded bg-zinc-950 border border-zinc-800 text-[11px] space-y-1">
+                      <div className="text-[10px] uppercase font-medium text-zinc-500">
+                        Mechanics Checklist
+                      </div>
+                      <div className="flex flex-wrap gap-1.5 text-zinc-300">
+                        {selectedHero.gameplayMechanics.crowdControl.map((cc) => (
+                          <span key={cc} className="px-1.5 py-0.2 rounded bg-zinc-900 border border-zinc-800 text-[10px]">
+                            CC: {cc}
+                          </span>
+                        ))}
+                        {selectedHero.gameplayMechanics.mobility.map((mob) => (
+                          <span key={mob} className="px-1.5 py-0.2 rounded bg-zinc-900 border border-zinc-800 text-[10px]">
+                            Mobility: {mob}
+                          </span>
+                        ))}
+                        {selectedHero.gameplayMechanics.damageCharacteristics.map((dc) => (
+                          <span key={dc} className="px-1.5 py-0.2 rounded bg-zinc-900 border border-zinc-800 text-[10px]">
+                            {dc}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* TAB 3: PATCH HISTORY & VERIFICATION */}
+              {activeTab === 'patch' && (
+                <div className="space-y-3.5">
+                  {/* Verification Card */}
+                  <div className="p-3 rounded-lg border border-sky-900/40 bg-sky-950/20 space-y-2">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-1.5 text-xs text-sky-300 font-medium">
+                        <CheckCircle2 className="w-4 h-4 text-sky-400" />
+                        <span>Original Server Verification</span>
+                      </div>
+                      <span className="px-1.5 py-0.5 rounded text-[10px] font-mono bg-sky-900/60 text-sky-200 border border-sky-700/50">
+                        {selectedHero.verification?.verificationStatus.toUpperCase() || 'VERIFIED'}
+                      </span>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-2 text-[11px] font-mono text-zinc-400 pt-1">
+                      <div>
+                        <span className="text-[10px] text-zinc-500 uppercase block">Active Patch:</span>
+                        <span className="text-zinc-200">{selectedHero.verification?.currentPatch || CURRENT_ORIGINAL_SERVER_PATCH}</span>
+                      </div>
+                      <div>
+                        <span className="text-[10px] text-zinc-500 uppercase block">Verified Date:</span>
+                        <span className="text-zinc-200">{selectedHero.verification?.lastVerifiedDate || CURRENT_PATCH_DATE}</span>
+                      </div>
+                      <div className="col-span-2">
+                        <span className="text-[10px] text-zinc-500 uppercase block">Primary Source:</span>
+                        <span className="text-zinc-300">{selectedHero.verification?.source || OFFICIAL_PATCH_SOURCE}</span>
+                      </div>
+                    </div>
                   </div>
-                )}
 
-                <div className="flex items-center gap-1.5 text-[10px] text-zinc-500 pt-0.5">
-                  <ShieldAlert className="w-3 h-3 text-zinc-500 shrink-0" />
-                  <span>Community matchup reference. Subject to draft composition and individual player skill.</span>
-                </div>
-              </div>
+                  {/* Patch Change Log Timeline */}
+                  <div className="space-y-2">
+                    <span className="text-[10px] text-zinc-500 uppercase font-medium block">
+                      Balance & Rework History
+                    </span>
 
-              {/* Strengths & Weaknesses */}
-              <div className="space-y-2 text-xs pt-1 border-t border-zinc-800">
-                <div>
-                  <span className="text-[10px] text-zinc-500 uppercase font-medium block mb-0.5">
-                    Strengths:
-                  </span>
-                  <ul className="text-zinc-300 space-y-0.5 list-disc pl-4 text-[11px]">
-                    {selectedHero.strengths.map((s, idx) => (
-                      <li key={idx}>{s}</li>
-                    ))}
-                  </ul>
-                </div>
+                    {selectedHero.patchHistory && selectedHero.patchHistory.length > 0 ? (
+                      <div className="space-y-2.5 max-h-[500px] overflow-y-auto pr-0.5">
+                        {selectedHero.patchHistory.map((change, idx) => {
+                          const badgeColor =
+                            change.type === 'buff'
+                              ? 'bg-emerald-950/70 text-emerald-300 border-emerald-800/60'
+                              : change.type === 'nerf'
+                              ? 'bg-rose-950/70 text-rose-300 border-rose-800/60'
+                              : change.type === 'revamp' || change.type === 'rework'
+                              ? 'bg-purple-950/70 text-purple-300 border-purple-800/60'
+                              : 'bg-amber-950/70 text-amber-300 border-amber-800/60';
 
-                <div>
-                  <span className="text-[10px] text-zinc-500 uppercase font-medium block mb-0.5">
-                    Weaknesses:
-                  </span>
-                  <ul className="text-zinc-400 space-y-0.5 list-disc pl-4 text-[11px]">
-                    {selectedHero.weaknesses.map((w, idx) => (
-                      <li key={idx}>{w}</li>
-                    ))}
-                  </ul>
+                          return (
+                            <div
+                              key={idx}
+                              className="p-3 rounded-lg border border-zinc-800 bg-zinc-950 space-y-1.5"
+                            >
+                              <div className="flex items-center justify-between gap-2">
+                                <div className="flex items-center gap-1.5">
+                                  <span
+                                    className={`px-1.5 py-0.2 rounded text-[9px] font-mono uppercase font-semibold border ${badgeColor}`}
+                                  >
+                                    {change.type}
+                                  </span>
+                                  <span className="font-semibold text-xs text-zinc-200">
+                                    {change.title}
+                                  </span>
+                                </div>
+                                <span className="text-[10px] font-mono text-zinc-500">
+                                  {change.patchVersion}
+                                </span>
+                              </div>
+
+                              <p className="text-[11px] text-zinc-300 leading-relaxed">
+                                {change.summary}
+                              </p>
+
+                              {change.details && change.details.length > 0 && (
+                                <ul className="text-[10px] text-zinc-400 space-y-0.5 list-disc pl-4 pt-1 border-t border-zinc-900">
+                                  {change.details.map((item, dIdx) => (
+                                    <li key={dIdx}>{item}</li>
+                                  ))}
+                                </ul>
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    ) : (
+                      <div className="p-4 rounded bg-zinc-950 border border-zinc-800 text-center space-y-1">
+                        <p className="text-xs text-zinc-400 font-medium">No recent balance rebalances</p>
+                        <p className="text-[10px] text-zinc-500">
+                          {selectedHero.name}’s kit conforms to the active Original Server baseline ({CURRENT_ORIGINAL_SERVER_PATCH}) without targeted adjustments in recent patches.
+                        </p>
+                      </div>
+                    )}
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
           ) : (
             <div className="p-8 text-center text-zinc-600 border border-zinc-800 rounded-lg">

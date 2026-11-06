@@ -33,8 +33,18 @@ export function validateHeroCatalog(heroes: Hero[]): { valid: boolean; errors: s
     if (!Array.isArray(h.weaknesses)) errors.push(`Hero ${h.id} missing weaknesses array`);
   }
 
-  // Check relationship references (counters, counteredBy, synergies)
+  // Check relationship references (counters, counteredBy, synergies) and gameplay integrity
   for (const h of heroes) {
+    if (!h.verification || !h.verification.currentPatch) {
+      errors.push(`Hero ${h.id} missing verified patch metadata`);
+    }
+    if (!Array.isArray(h.skills) || h.skills.length < 3) {
+      errors.push(`Hero ${h.id} missing verified ability kit (skills array)`);
+    }
+    if (!h.gameplayMechanics) {
+      errors.push(`Hero ${h.id} missing gameplay mechanics specification`);
+    }
+
     for (const c of h.counters || []) {
       if (!idSet.has(c)) {
         errors.push(`Hero ${h.id} has invalid counter reference: "${c}"`);

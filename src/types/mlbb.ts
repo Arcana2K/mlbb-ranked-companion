@@ -34,6 +34,40 @@ export interface HeroStatisticalData {
   isVerified: boolean;
 }
 
+export interface HeroSkill {
+  id: string; // 'passive' | 'skill1' | 'skill2' | 'skill3' | 'ultimate'
+  name: string;
+  type: 'Passive' | 'Skill 1' | 'Skill 2' | 'Skill 3' | 'Ultimate';
+  description: string;
+  cooldown?: string;
+  energyCost?: string;
+  tags?: string[]; // e.g. ['Crowd Control', 'Blink', 'AoE', 'Buff', 'Slow', 'Shield', 'Burst', 'Invincible', 'True Damage']
+}
+
+export interface HeroPatchChange {
+  patchVersion: string;
+  date: string;
+  type: 'revamp' | 'rework' | 'buff' | 'nerf' | 'adjustment';
+  title: string;
+  summary: string;
+  details: string[];
+}
+
+export interface HeroVerificationMetadata {
+  currentPatch: string;
+  lastVerifiedDate: string;
+  source: string;
+  sourceUrl: string;
+  verificationStatus: 'verified' | 'unverified';
+}
+
+export interface HeroGameplayMechanics {
+  crowdControl: string[];
+  mobility: string[];
+  damageCharacteristics: string[];
+  resourceType?: string;
+}
+
 export interface Hero {
   id: string;
   name: string;
@@ -55,9 +89,18 @@ export interface Hero {
   description: string;
   strengths: string[];
   weaknesses: string[];
+
+  // Verified Gameplay Data (Current Original Server Patch 2.2.16a)
+  skills?: HeroSkill[];
+  gameplayMechanics?: HeroGameplayMechanics;
+
+  // Patch Tracking & Verification
+  verification?: HeroVerificationMetadata;
+  patchHistory?: HeroPatchChange[];
 }
 
 export interface PlayerProfile {
+
   ign: string;
   server: string;
   currentRank: RankTier;
