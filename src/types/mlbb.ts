@@ -129,11 +129,18 @@ export interface RecommendationScore {
   hero: Hero;
   totalScore: number;
   roleFitScore: number;
-  counterScore: number;
-  synergyScore: number;
+  counterScore: number | null;
+  synergyScore: number | null;
   playerProficiencyScore: number;
   reasons: string[];
   warnings: string[];
+  matchupScoringExcluded: boolean;
+  effectiveWeights: {
+    roleFit: number;
+    counterAdvantage: number;
+    teamSynergy: number;
+    playerProficiency: number;
+  };
 }
 
 export interface ScoringWeights {

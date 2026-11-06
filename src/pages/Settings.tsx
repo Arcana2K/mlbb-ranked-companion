@@ -379,7 +379,7 @@ export const Settings: React.FC<SettingsProps> = ({
                 className="w-full accent-zinc-400"
               />
               <p className="text-[10px] text-zinc-500">
-                Favors heroes with mechanical counter superiority over enemy locks.
+                Favors heroes with mechanical counter superiority over enemy locks. (Active only when verified matchup data is attached).
               </p>
             </div>
 
@@ -399,7 +399,7 @@ export const Settings: React.FC<SettingsProps> = ({
                 className="w-full accent-zinc-400"
               />
               <p className="text-[10px] text-zinc-500">
-                Boosts hero combinations with proven teamfight synergy with allies.
+                Boosts hero combinations with proven teamfight synergy with allies. (Active only when verified matchup data is attached).
               </p>
             </div>
 

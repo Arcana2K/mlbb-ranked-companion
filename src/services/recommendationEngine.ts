@@ -175,35 +175,46 @@ export class RecommendationEngine {
         reasons.push('Adds essential Physical Damage against anti-magic defense.');
       }
 
-      // 2. COUNTER ADVANTAGE
-      let counterMatches = 0;
-      let counteredByMatches = 0;
+      // 2. COUNTER ADVANTAGE & TEAM SYNERGY
+      // Requirement: Exclude all matchup relationships marked 'unverified_reference' from recommendation scoring.
+      // Do not describe a hero as a confirmed counter or synergy partner unless supported by verified data.
+      const isMatchupVerified = hero.matchupStatus === 'verified';
+      let counterScore: number | null = null;
+      let synergyScore: number | null = null;
 
-      for (const enemy of enemyHeroes) {
-        if (hero.counters.includes(enemy.id)) {
-          counterMatches++;
-          reasons.push(`Effective counter against enemy ${enemy.name}.`);
+      if (isMatchupVerified) {
+        let counterRaw = 50;
+        let counterMatches = 0;
+        let counteredByMatches = 0;
+
+        for (const enemy of enemyHeroes) {
+          if (hero.counters.includes(enemy.id)) {
+            counterMatches++;
+            reasons.push(`Effective counter against enemy ${enemy.name}.`);
+          }
+          if (hero.counteredBy.includes(enemy.id)) {
+            counteredByMatches++;
+            warnings.push(`Disadvantaged against selected enemy ${enemy.name}.`);
+          }
         }
-        if (hero.counteredBy.includes(enemy.id)) {
-          counteredByMatches++;
-          warnings.push(`Disadvantaged against selected enemy ${enemy.name}.`);
+
+        counterRaw += counterMatches * 25;
+        counterRaw -= counteredByMatches * 25;
+        counterScore = Math.max(0, Math.min(100, Math.round(counterRaw)));
+
+        let synergyRaw = 50;
+        let synergyMatches = 0;
+        for (const ally of alliedHeroes) {
+          if (hero.synergies.includes(ally.id) || ally.synergies.includes(hero.id)) {
+            synergyMatches++;
+            reasons.push(`Strong tactical synergy when paired with allied ${ally.name}.`);
+          }
         }
+        synergyRaw += synergyMatches * 20;
+        synergyScore = Math.max(0, Math.min(100, Math.round(synergyRaw)));
       }
 
-      counterRaw += counterMatches * 25;
-      counterRaw -= counteredByMatches * 25;
-
-      // 3. TEAM SYNERGY
-      let synergyMatches = 0;
-      for (const ally of alliedHeroes) {
-        if (hero.synergies.includes(ally.id) || ally.synergies.includes(hero.id)) {
-          synergyMatches++;
-          reasons.push(`Strong tactical synergy when paired with allied ${ally.name}.`);
-        }
-      }
-      synergyRaw += synergyMatches * 20;
-
-      // 4. PLAYER PROFICIENCY
+      // 3. PLAYER PROFICIENCY
       if (userProfile) {
         if (userProfile.favoriteHeroes.includes(hero.id)) {
           proficiencyRaw += 35;
@@ -220,26 +231,71 @@ export class RecommendationEngine {
       // Clamp raw scores to [0, 100]
       const clamp = (val: number) => Math.max(0, Math.min(100, Math.round(val)));
       const roleFitScore = clamp(roleFitRaw);
-      const counterScore = clamp(counterRaw);
-      const synergyScore = clamp(synergyRaw);
       const playerProficiencyScore = clamp(proficiencyRaw);
 
-      // Weighted sum calculation
-      const totalWeight =
-        weights.roleFit +
-        weights.counterAdvantage +
-        weights.teamSynergy +
-        weights.playerProficiency;
+      // 4. MATHEMATICAL WEIGHT RENORMALIZATION
+      // If matchup data is unverified, counterAdvantage and teamSynergy are excluded.
+      // Remaining active factors (roleFit and playerProficiency) are renormalized over their sum,
+      // ensuring scores remain fair, intuitive (0-100 scale), and unpenalized by missing feeds.
+      let calculatedScore: number;
+      let effectiveWeights: {
+        roleFit: number;
+        counterAdvantage: number;
+        teamSynergy: number;
+        playerProficiency: number;
+      };
 
-      const safeTotalWeight = totalWeight > 0 ? totalWeight : 100;
+      if (!isMatchupVerified) {
+        const activeWeightSum = weights.roleFit + weights.playerProficiency;
 
-      const calculatedScore = Math.round(
-        (roleFitScore * weights.roleFit +
-          counterScore * weights.counterAdvantage +
-          synergyScore * weights.teamSynergy +
-          playerProficiencyScore * weights.playerProficiency) /
-          safeTotalWeight
-      );
+        if (activeWeightSum > 0) {
+          calculatedScore = Math.round(
+            (roleFitScore * weights.roleFit + playerProficiencyScore * weights.playerProficiency) /
+              activeWeightSum
+          );
+          const effectiveRoleFit = Math.round((weights.roleFit / activeWeightSum) * 100);
+          effectiveWeights = {
+            roleFit: effectiveRoleFit,
+            counterAdvantage: 0,
+            teamSynergy: 0,
+            playerProficiency: 100 - effectiveRoleFit
+          };
+        } else {
+          // Fallback if both active weights are set to 0 in settings
+          calculatedScore = Math.round((roleFitScore + playerProficiencyScore) / 2);
+          effectiveWeights = {
+            roleFit: 50,
+            counterAdvantage: 0,
+            teamSynergy: 0,
+            playerProficiency: 50
+          };
+        }
+      } else {
+        const totalWeight =
+          weights.roleFit +
+          weights.counterAdvantage +
+          weights.teamSynergy +
+          weights.playerProficiency;
+
+        const safeTotalWeight = totalWeight > 0 ? totalWeight : 100;
+        const validCounterScore = counterScore ?? 50;
+        const validSynergyScore = synergyScore ?? 50;
+
+        calculatedScore = Math.round(
+          (roleFitScore * weights.roleFit +
+            validCounterScore * weights.counterAdvantage +
+            validSynergyScore * weights.teamSynergy +
+            playerProficiencyScore * weights.playerProficiency) /
+            safeTotalWeight
+        );
+
+        effectiveWeights = {
+          roleFit: Math.round((weights.roleFit / safeTotalWeight) * 100),
+          counterAdvantage: Math.round((weights.counterAdvantage / safeTotalWeight) * 100),
+          teamSynergy: Math.round((weights.teamSynergy / safeTotalWeight) * 100),
+          playerProficiency: Math.round((weights.playerProficiency / safeTotalWeight) * 100)
+        };
+      }
 
       recommendations.push({
         hero,
@@ -249,7 +305,9 @@ export class RecommendationEngine {
         synergyScore,
         playerProficiencyScore,
         reasons,
-        warnings
+        warnings,
+        matchupScoringExcluded: !isMatchupVerified,
+        effectiveWeights
       });
     }
 
