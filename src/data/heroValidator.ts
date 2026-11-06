@@ -1,9 +1,16 @@
-import { Role, Lane, DamageType, Hero } from '../types/mlbb';
+import { Hero } from '../types/mlbb';
 
-// Helper validator to guarantee uniqueness and reference integrity
+export const EXPECTED_HERO_COUNT = 133;
+
+// Helper validator to guarantee completeness, uniqueness, and reference integrity
 export function validateHeroCatalog(heroes: Hero[]): { valid: boolean; errors: string[] } {
   const errors: string[] = [];
   const idSet = new Set<string>();
+
+  // Check catalog completeness against official MLBB roster count
+  if (heroes.length < EXPECTED_HERO_COUNT) {
+    errors.push(`Hero catalog is incomplete: expected at least ${EXPECTED_HERO_COUNT} heroes, found ${heroes.length}`);
+  }
 
   for (const h of heroes) {
     if (!h.id || typeof h.id !== 'string') {
@@ -26,7 +33,7 @@ export function validateHeroCatalog(heroes: Hero[]): { valid: boolean; errors: s
     if (!Array.isArray(h.weaknesses)) errors.push(`Hero ${h.id} missing weaknesses array`);
   }
 
-  // Check relationship references
+  // Check relationship references (counters, counteredBy, synergies)
   for (const h of heroes) {
     for (const c of h.counters || []) {
       if (!idSet.has(c)) {
@@ -47,3 +54,4 @@ export function validateHeroCatalog(heroes: Hero[]): { valid: boolean; errors: s
 
   return { valid: errors.length === 0, errors };
 }
+
