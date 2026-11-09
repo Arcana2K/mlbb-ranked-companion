@@ -2412,9 +2412,9 @@ export const HEROES: Hero[] = RAW_HEROES.map((h) => {
     ? allPatchesVerified ? 'verified' : 'partial'
     : 'unverified';
 
-  // Current active patch audit (Patch 2.2.16a / 2.2.16)
+  // Current active patch audit (Patch 2.2.16a)
   const isAuditedInCurrentPatch = patchHistory.some(
-    (p) => p.patchVersion === CURRENT_ORIGINAL_SERVER_PATCH || (h.id === 'khufra' && p.patchVersion === 'Patch 2.2.16')
+    (p) => p.patchVersion === CURRENT_ORIGINAL_SERVER_PATCH
   );
   const currentPatchVerificationStatus: 'verified' | 'unverified' = isAuditedInCurrentPatch ? 'verified' : 'unverified';
 
@@ -2442,6 +2442,15 @@ export const HEROES: Hero[] = RAW_HEROES.map((h) => {
   const sourceType = hasDocumentedPatch ? patchHistory[0].sourceType : 'secondary';
   const lastVerifiedDate = hasDocumentedPatch ? patchHistory[0].date : CURRENT_PATCH_DATE;
 
+  // Verification tier: distinguish official Moonton source from secondary archive
+  const isOfficialSource = sourceType === 'official' || (sourceUrl && sourceUrl.includes('mobilelegends.com'));
+  const verificationTier: 'official_verified' | 'secondary_verified' | 'unverified' =
+    overallVerificationStatus === 'verified' && isOfficialSource
+      ? 'official_verified'
+      : (overallVerificationStatus === 'verified' || overallVerificationStatus === 'partial') && hasDocumentedPatch
+      ? 'secondary_verified'
+      : 'unverified';
+
   let evidenceNotes = '';
   if (overallVerificationStatus === 'verified') {
     evidenceNotes = `Audited & verified against ${CURRENT_ORIGINAL_SERVER_PATCH}. Skills, mechanics, and live balance changes verified.`;
@@ -2464,6 +2473,7 @@ export const HEROES: Hero[] = RAW_HEROES.map((h) => {
       sourceUrl,
       sourceType,
       verificationStatus: overallVerificationStatus,
+      verificationTier,
       evidenceNotes,
       verificationNotes: evidenceNotes,
       skillsVerificationStatus,

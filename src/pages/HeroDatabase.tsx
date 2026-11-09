@@ -4,8 +4,6 @@ import { HEROES, HERO_MAP } from '../data/heroes';
 import {
   CURRENT_ORIGINAL_SERVER_PATCH,
   CURRENT_PATCH_DATE,
-  OFFICIAL_PATCH_SOURCE,
-  OFFICIAL_PATCH_ARCHIVE_URL,
   getLatestHeroPatchChange,
 } from '../data/heroPatchHistory';
 import { RoleBadge } from '../components/common/RoleBadge';
@@ -75,6 +73,8 @@ export const HeroDatabase: React.FC = () => {
   };
 
   const isSelectedVerified = selectedHero?.verification?.verificationStatus === 'verified';
+  const selectedTier = selectedHero?.verification?.verificationTier || 'unverified';
+  const isSkillsVerified = selectedHero?.verification?.skillsVerificationStatus === 'verified';
   const latestHeroPatch = selectedHero ? getLatestHeroPatchChange(selectedHero.id) : undefined;
 
   // Filtered patch changes for the selected hero
@@ -114,17 +114,42 @@ export const HeroDatabase: React.FC = () => {
           </span>
         </div>
 
-        <div className="flex items-center gap-3">
-          <span className="text-zinc-500 text-[11px]">Archive: {OFFICIAL_PATCH_SOURCE}</span>
-          <a
-            href={OFFICIAL_PATCH_ARCHIVE_URL}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-1 text-[11px] text-sky-400 hover:text-sky-300 transition-colors"
-          >
-            <span>liquipedia.net</span>
-            <ExternalLink className="w-3 h-3" />
-          </a>
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 text-[11px]">
+          <div className="flex items-center gap-1.5">
+            <span className="text-zinc-500">Primary Source:</span>
+            <a
+              href="https://www.mobilelegends.com/news"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1 text-sky-400 hover:text-sky-300 transition-colors font-medium"
+            >
+              <span>Moonton News</span>
+              <ExternalLink className="w-3 h-3" />
+            </a>
+          </div>
+          <span className="text-zinc-700 hidden sm:inline">|</span>
+          <div className="flex items-center gap-1.5">
+            <span className="text-zinc-500">Secondary Archives:</span>
+            <a
+              href="https://liquipedia.net/mobilelegends/Portal:Patches"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1 text-indigo-400 hover:text-indigo-300 transition-colors font-medium"
+            >
+              <span>Liquipedia</span>
+              <ExternalLink className="w-3 h-3" />
+            </a>
+            <span className="text-zinc-600">&</span>
+            <a
+              href="https://mlbbhub.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1 text-indigo-400 hover:text-indigo-300 transition-colors font-medium"
+            >
+              <span>MLBBHub</span>
+              <ExternalLink className="w-3 h-3" />
+            </a>
+          </div>
         </div>
       </div>
 
@@ -200,7 +225,7 @@ export const HeroDatabase: React.FC = () => {
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2.5 max-h-[760px] overflow-y-auto p-0.5">
               {filteredHeroes.map((hero) => {
                 const isSelected = selectedHero?.id === hero.id;
-                const isVerified = hero.verification?.verificationStatus === 'verified';
+                const tier = hero.verification?.verificationTier || 'unverified';
 
                 return (
                   <div
@@ -221,9 +246,28 @@ export const HeroDatabase: React.FC = () => {
                         {hero.difficulty}
                       </div>
 
-                      {isVerified && (
-                        <div className="absolute top-1 left-1 px-1 py-0.2 rounded bg-sky-950/90 text-[8px] font-mono text-sky-300 border border-sky-800/60">
-                          VERIFIED
+                      {tier === 'official_verified' && (
+                        <div
+                          className="absolute top-1 left-1 px-1.5 py-0.5 rounded bg-cyan-950/90 text-[8px] font-mono font-semibold text-cyan-300 border border-cyan-700/70 shadow-sm"
+                          title="Official Moonton Verified"
+                        >
+                          OFFICIAL
+                        </div>
+                      )}
+                      {tier === 'secondary_verified' && (
+                        <div
+                          className="absolute top-1 left-1 px-1.5 py-0.5 rounded bg-indigo-950/90 text-[8px] font-mono font-semibold text-indigo-300 border border-indigo-800/70 shadow-sm"
+                          title="Secondary Archive Verified (Liquipedia/MLBBHub)"
+                        >
+                          ARCHIVE
+                        </div>
+                      )}
+                      {tier === 'unverified' && (
+                        <div
+                          className="absolute top-1 left-1 px-1.5 py-0.5 rounded bg-zinc-950/80 text-[8px] font-mono text-zinc-500 border border-zinc-800/80"
+                          title="Unverified (Reference Baseline)"
+                        >
+                          BASELINE
                         </div>
                       )}
 
@@ -354,19 +398,35 @@ export const HeroDatabase: React.FC = () => {
               {activeTab === 'overview' && (
                 <div className="space-y-4">
                   {/* Verification Status Card */}
-                  {isSelectedVerified ? (
-                    <div className="flex items-center justify-between p-2.5 rounded bg-sky-950/30 border border-sky-900/40 text-xs">
-                      <div className="flex items-center gap-1.5 text-sky-300 font-medium">
-                        <CheckCircle2 className="w-4 h-4 text-sky-400 shrink-0" />
-                        <span>Verified Patch Documentation</span>
+                  {selectedTier === 'official_verified' ? (
+                    <div className="flex items-center justify-between p-2.5 rounded bg-cyan-950/30 border border-cyan-800/50 text-xs">
+                      <div className="flex items-center gap-1.5 text-cyan-300 font-medium">
+                        <CheckCircle2 className="w-4 h-4 text-cyan-400 shrink-0" />
+                        <span>Official Moonton Verified</span>
                       </div>
                       <a
                         href={selectedHero.verification?.sourceUrl}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="inline-flex items-center gap-1 text-[11px] text-sky-400 hover:text-sky-300 font-mono transition-colors"
+                        className="inline-flex items-center gap-1 text-[11px] text-cyan-400 hover:text-cyan-300 font-mono transition-colors"
                       >
-                        <span className="truncate max-w-[150px]">{selectedHero.verification?.source}</span>
+                        <span className="truncate max-w-[170px]">{selectedHero.verification?.source}</span>
+                        <ExternalLink className="w-3 h-3 shrink-0" />
+                      </a>
+                    </div>
+                  ) : selectedTier === 'secondary_verified' ? (
+                    <div className="flex items-center justify-between p-2.5 rounded bg-indigo-950/30 border border-indigo-800/50 text-xs">
+                      <div className="flex items-center gap-1.5 text-indigo-300 font-medium">
+                        <CheckCircle2 className="w-4 h-4 text-indigo-400 shrink-0" />
+                        <span>Secondary Archive Verified</span>
+                      </div>
+                      <a
+                        href={selectedHero.verification?.sourceUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1 text-[11px] text-indigo-400 hover:text-indigo-300 font-mono transition-colors"
+                      >
+                        <span className="truncate max-w-[170px]">{selectedHero.verification?.source}</span>
                         <ExternalLink className="w-3 h-3 shrink-0" />
                       </a>
                     </div>
@@ -374,7 +434,7 @@ export const HeroDatabase: React.FC = () => {
                     <div className="flex items-center justify-between p-2.5 rounded bg-zinc-950 border border-zinc-800 text-xs">
                       <div className="flex items-center gap-1.5 text-zinc-400">
                         <Info className="w-3.5 h-3.5 text-zinc-500 shrink-0" />
-                        <span>Community Reference Baseline</span>
+                        <span>Unverified (Reference Baseline)</span>
                       </div>
                       <span className="text-[10px] text-zinc-500 font-mono">Pending Patch Record</span>
                     </div>
@@ -609,14 +669,14 @@ export const HeroDatabase: React.FC = () => {
                   <div className="flex items-center justify-between text-xs text-zinc-400 border-b border-zinc-800 pb-2">
                     <div className="flex items-center gap-2">
                       <span className="font-medium text-zinc-200">
-                        {isSelectedVerified ? 'Verified Ability Kit' : 'Ability Kit (Reference Baseline)'}
+                        {isSkillsVerified ? 'Audited Ability Kit' : 'Ability Kit (Reference Baseline)'}
                       </span>
                       <span className={`px-1.5 py-0.2 rounded text-[9px] font-mono border ${
-                        isSelectedVerified
-                          ? 'bg-sky-950/70 text-sky-300 border-sky-800/60'
+                        isSkillsVerified
+                          ? 'bg-emerald-950/70 text-emerald-300 border-emerald-800/60'
                           : 'bg-zinc-950 text-zinc-400 border-zinc-800'
                       }`}>
-                        {isSelectedVerified ? 'Verified' : 'Unverified'}
+                        {isSkillsVerified ? 'Audited' : 'Ref Baseline'}
                       </span>
                     </div>
                     <span className="font-mono text-[10px] text-zinc-500">
@@ -734,43 +794,51 @@ export const HeroDatabase: React.FC = () => {
                 <div className="space-y-3.5">
                   {/* Verification Card with Granular States */}
                   <div className={`p-3 rounded-lg border space-y-2.5 ${
-                    selectedHero.verification?.verificationStatus === 'verified'
-                      ? 'border-sky-900/40 bg-sky-950/20'
-                      : selectedHero.verification?.verificationStatus === 'partial'
-                      ? 'border-amber-900/40 bg-amber-950/15'
+                    selectedTier === 'official_verified'
+                      ? 'border-cyan-800/50 bg-cyan-950/25'
+                      : selectedTier === 'secondary_verified'
+                      ? 'border-indigo-800/50 bg-indigo-950/20'
                       : 'border-zinc-800 bg-zinc-950/50'
                   }`}>
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-1.5 text-xs font-medium">
-                        {selectedHero.verification?.verificationStatus === 'verified' ? (
-                          <CheckCircle2 className="w-4 h-4 text-sky-400" />
-                        ) : selectedHero.verification?.verificationStatus === 'partial' ? (
-                          <Info className="w-4 h-4 text-amber-400" />
+                        {selectedTier === 'official_verified' ? (
+                          <CheckCircle2 className="w-4 h-4 text-cyan-400" />
+                        ) : selectedTier === 'secondary_verified' ? (
+                          <CheckCircle2 className="w-4 h-4 text-indigo-400" />
                         ) : (
                           <ShieldAlert className="w-4 h-4 text-zinc-500" />
                         )}
                         <span className={
-                          selectedHero.verification?.verificationStatus === 'verified'
-                            ? 'text-sky-300'
-                            : selectedHero.verification?.verificationStatus === 'partial'
-                            ? 'text-amber-300'
+                          selectedTier === 'official_verified'
+                            ? 'text-cyan-300'
+                            : selectedTier === 'secondary_verified'
+                            ? 'text-indigo-300'
                             : 'text-zinc-300'
                         }>
-                          {selectedHero.verification?.verificationStatus === 'verified'
-                            ? 'Original Server Patch Verification (Complete)'
-                            : selectedHero.verification?.verificationStatus === 'partial'
-                            ? 'Partial Patch Verification (Historical Data Verified)'
-                            : 'Community Reference Baseline (Pending Patch Audit)'}
+                          {selectedTier === 'official_verified'
+                            ? 'Official Moonton Verified (Original Server)'
+                            : selectedTier === 'secondary_verified'
+                            ? `Secondary Archive Verified (${
+                                selectedHero.verification?.currentPatchVerificationStatus === 'verified'
+                                  ? 'Active Patch Hotfix'
+                                  : 'Historical Patch Records'
+                              })`
+                            : 'Unverified Reference Baseline (Pending Patch Audit)'}
                         </span>
                       </div>
                       <span className={`px-2 py-0.5 rounded text-[10px] font-mono uppercase font-semibold border ${
-                        selectedHero.verification?.verificationStatus === 'verified'
-                          ? 'bg-sky-900/60 text-sky-200 border-sky-700/50'
-                          : selectedHero.verification?.verificationStatus === 'partial'
-                          ? 'bg-amber-950/70 text-amber-300 border-amber-800/60'
+                        selectedTier === 'official_verified'
+                          ? 'bg-cyan-900/60 text-cyan-200 border-cyan-700/50'
+                          : selectedTier === 'secondary_verified'
+                          ? 'bg-indigo-950/80 text-indigo-300 border-indigo-800/70'
                           : 'bg-zinc-900 text-zinc-400 border-zinc-800'
                       }`}>
-                        {selectedHero.verification?.verificationStatus.toUpperCase() || 'UNVERIFIED'}
+                        {selectedTier === 'official_verified'
+                          ? 'OFFICIAL MOONTON'
+                          : selectedTier === 'secondary_verified'
+                          ? 'SECONDARY ARCHIVE'
+                          : 'UNVERIFIED'}
                       </span>
                     </div>
 
@@ -812,9 +880,24 @@ export const HeroDatabase: React.FC = () => {
                         <span className="text-zinc-200">{selectedHero.verification?.lastVerifiedDate || CURRENT_PATCH_DATE}</span>
                       </div>
                       <div className="col-span-2">
-                        <span className="text-[10px] text-zinc-500 uppercase block">Primary Attribution:</span>
+                        <span className="text-[10px] text-zinc-500 uppercase block">Source Attribution:</span>
                         <div className="flex items-center justify-between">
-                          <span className="text-zinc-300 truncate">{selectedHero.verification?.source}</span>
+                          <div className="flex items-center gap-1.5 min-w-0">
+                            <span className={`px-1.5 py-0.2 rounded text-[9px] font-mono uppercase font-semibold shrink-0 border ${
+                              selectedTier === 'official_verified'
+                                ? 'bg-cyan-950 text-cyan-300 border-cyan-800'
+                                : selectedTier === 'secondary_verified'
+                                ? 'bg-indigo-950 text-indigo-300 border-indigo-800'
+                                : 'bg-zinc-900 text-zinc-400 border-zinc-800'
+                            }`}>
+                              {selectedTier === 'official_verified'
+                                ? 'Official Primary'
+                                : selectedTier === 'secondary_verified'
+                                ? 'Secondary Archive'
+                                : 'Reference Baseline'}
+                            </span>
+                            <span className="text-zinc-300 truncate">{selectedHero.verification?.source}</span>
+                          </div>
                           {selectedHero.verification?.sourceUrl && (
                             <a
                               href={selectedHero.verification.sourceUrl}

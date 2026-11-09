@@ -85,6 +85,7 @@ export interface HeroVerificationMetadata {
   sourceUrl: string;
   sourceType?: SourceType;
   verificationStatus: 'verified' | 'unverified' | 'partial';
+  verificationTier?: 'official_verified' | 'secondary_verified' | 'unverified';
   evidenceNotes?: string;
   verificationNotes?: string;
 
