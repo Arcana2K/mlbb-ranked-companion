@@ -44,15 +44,35 @@ export interface HeroSkill {
   tags?: string[]; // e.g. ['Crowd Control', 'Blink', 'AoE', 'Buff', 'Slow', 'Shield', 'Burst', 'Invincible', 'True Damage']
 }
 
+export type PatchChangeType = 'buff' | 'nerf' | 'adjustment' | 'revamp' | 'rework';
+export type SourceType = 'official' | 'secondary';
+
 export interface HeroPatchChange {
+  id?: string;
+  heroId: string;
+  heroName: string;
   patchVersion: string;
   date: string;
-  type: 'revamp' | 'rework' | 'buff' | 'nerf' | 'adjustment';
+  type: PatchChangeType;
   title: string;
+  affectedSkillOrAttribute: string;
+  previousValue?: string;
+  newValue?: string;
   summary: string;
   details: string[];
-  sourceUrl?: string;
-  sourceName?: string;
+  sourceName: string;
+  sourceUrl: string;
+  sourceType: SourceType;
+  verificationStatus: 'verified' | 'unverified';
+}
+
+export interface PatchConfig {
+  latestOriginalServerPatch: string;
+  patchReleaseDate: string;
+  databaseVerificationDate: string;
+  officialSourceUrl: string;
+  archiveSourceUrl: string;
+  environment: 'Original Server';
 }
 
 export interface HeroVerificationMetadata {
@@ -60,6 +80,7 @@ export interface HeroVerificationMetadata {
   lastVerifiedDate: string;
   source: string;
   sourceUrl: string;
+  sourceType?: SourceType;
   verificationStatus: 'verified' | 'unverified';
   evidenceNotes?: string;
 }

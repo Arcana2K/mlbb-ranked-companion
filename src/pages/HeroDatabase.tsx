@@ -1,11 +1,12 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import { Hero, Role, Lane } from '../types/mlbb';
+import { Hero, Role, Lane, PatchChangeType } from '../types/mlbb';
 import { HEROES, HERO_MAP } from '../data/heroes';
 import {
   CURRENT_ORIGINAL_SERVER_PATCH,
   CURRENT_PATCH_DATE,
   OFFICIAL_PATCH_SOURCE,
   OFFICIAL_PATCH_ARCHIVE_URL,
+  getLatestHeroPatchChange,
 } from '../data/heroPatchHistory';
 import { RoleBadge } from '../components/common/RoleBadge';
 import { HeroAvatar } from '../components/common/HeroAvatar';
@@ -25,6 +26,7 @@ const ROLES: (Role | 'ALL')[] = ['ALL', 'Tank', 'Fighter', 'Assassin', 'Mage', '
 const LANES: (Lane | 'ALL')[] = ['ALL', 'Gold Lane', 'EXP Lane', 'Mid Lane', 'Roam', 'Jungle'];
 
 type DetailTab = 'overview' | 'skills' | 'patch';
+type PatchFilterCategory = 'all' | 'buff' | 'nerf' | 'adjustment' | 'revamp';
 
 export const HeroDatabase: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -32,6 +34,7 @@ export const HeroDatabase: React.FC = () => {
   const [selectedLane, setSelectedLane] = useState<Lane | 'ALL'>('ALL');
   const [selectedHero, setSelectedHero] = useState<Hero | null>(HEROES[0]);
   const [activeTab, setActiveTab] = useState<DetailTab>('overview');
+  const [patchFilter, setPatchFilter] = useState<PatchFilterCategory>('all');
 
   const filteredHeroes = useMemo(() => {
     return HEROES.filter((hero) => {
@@ -72,6 +75,30 @@ export const HeroDatabase: React.FC = () => {
   };
 
   const isSelectedVerified = selectedHero?.verification?.verificationStatus === 'verified';
+  const latestHeroPatch = selectedHero ? getLatestHeroPatchChange(selectedHero.id) : undefined;
+
+  // Filtered patch changes for the selected hero
+  const heroPatchList = useMemo(() => {
+    if (!selectedHero?.patchHistory) return [];
+    if (patchFilter === 'all') return selectedHero.patchHistory;
+    if (patchFilter === 'revamp') {
+      return selectedHero.patchHistory.filter((p) => p.type === 'revamp' || p.type === 'rework');
+    }
+    return selectedHero.patchHistory.filter((p) => p.type === patchFilter);
+  }, [selectedHero, patchFilter]);
+
+  // Patch counts by category for the filter tabs
+  const patchCounts = useMemo(() => {
+    if (!selectedHero?.patchHistory) return { all: 0, buff: 0, nerf: 0, adjustment: 0, revamp: 0 };
+    const list = selectedHero.patchHistory;
+    return {
+      all: list.length,
+      buff: list.filter((p) => p.type === 'buff').length,
+      nerf: list.filter((p) => p.type === 'nerf').length,
+      adjustment: list.filter((p) => p.type === 'adjustment').length,
+      revamp: list.filter((p) => p.type === 'revamp' || p.type === 'rework').length
+    };
+  }, [selectedHero]);
 
   return (
     <div className="space-y-5">
@@ -105,7 +132,7 @@ export const HeroDatabase: React.FC = () => {
 
       <DataDisclaimer
         type="notice"
-        text="Mobile Legends: Bang Bang catalog of 133 heroes. Entries with documented patch notes are verified against primary sources; other entries reflect the current in-game baseline. Unverified matchmaking statistics and win rates are omitted to preserve analytical integrity."
+        text="Mobile Legends: Bang Bang catalog of 133 heroes. Balance changes and revamps are verified against documented patch notes; other entries reflect the current in-game baseline. Unverified matchmaking statistics and win rates are omitted to preserve analytical integrity."
       />
 
       {/* Filter and Search Bar */}
@@ -261,6 +288,25 @@ export const HeroDatabase: React.FC = () => {
                     <span>Damage: <strong className="text-zinc-300">{selectedHero.damageType}</strong></span>
                     <span>Diff: <strong className="text-zinc-300">{selectedHero.difficulty}</strong></span>
                   </div>
+
+                  {/* Latest Verified Balance Change Highlight */}
+                  {latestHeroPatch && (
+                    <div className="mt-2 flex items-center gap-1.5 p-1.5 rounded bg-zinc-950 border border-zinc-800 text-[11px]">
+                      <span className={`px-1.5 py-0.2 rounded text-[9px] font-mono uppercase font-semibold border ${
+                        latestHeroPatch.type === 'buff'
+                          ? 'bg-emerald-950/70 text-emerald-300 border-emerald-800/60'
+                          : latestHeroPatch.type === 'nerf'
+                          ? 'bg-rose-950/70 text-rose-300 border-rose-800/60'
+                          : latestHeroPatch.type === 'revamp' || latestHeroPatch.type === 'rework'
+                          ? 'bg-purple-950/70 text-purple-300 border-purple-800/60'
+                          : 'bg-amber-950/70 text-amber-300 border-amber-800/60'
+                      }`}>
+                        {latestHeroPatch.type}
+                      </span>
+                      <span className="text-zinc-300 truncate font-medium">{latestHeroPatch.title}</span>
+                      <span className="text-zinc-500 font-mono text-[10px] ml-auto shrink-0">{latestHeroPatch.patchVersion}</span>
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -299,7 +345,9 @@ export const HeroDatabase: React.FC = () => {
                 >
                   <span>Patch History</span>
                   {selectedHero.patchHistory && selectedHero.patchHistory.length > 0 && (
-                    <span className="w-1.5 h-1.5 rounded-full bg-sky-400"></span>
+                    <span className="px-1.5 py-0.2 rounded bg-sky-950 text-[10px] font-mono text-sky-300 border border-sky-800/60">
+                      {selectedHero.patchHistory.length}
+                    </span>
                   )}
                 </button>
               </div>
@@ -320,8 +368,8 @@ export const HeroDatabase: React.FC = () => {
                         rel="noopener noreferrer"
                         className="inline-flex items-center gap-1 text-[11px] text-sky-400 hover:text-sky-300 font-mono transition-colors"
                       >
-                        <span>{selectedHero.verification?.source}</span>
-                        <ExternalLink className="w-3 h-3" />
+                        <span className="truncate max-w-[150px]">{selectedHero.verification?.source}</span>
+                        <ExternalLink className="w-3 h-3 shrink-0" />
                       </a>
                     </div>
                   ) : (
@@ -750,15 +798,84 @@ export const HeroDatabase: React.FC = () => {
                     </div>
                   </div>
 
-                  {/* Patch Change Log Timeline */}
+                  {/* Category Filter Toolbar */}
                   <div className="space-y-2">
-                    <span className="text-[10px] text-zinc-500 uppercase font-medium block">
-                      Balance & Rework History
-                    </span>
+                    <div className="flex items-center justify-between">
+                      <span className="text-[10px] text-zinc-500 uppercase font-medium block">
+                        Balance & Rework History
+                      </span>
+                      <span className="text-[10px] font-mono text-zinc-500">
+                        {heroPatchList.length} of {selectedHero.patchHistory?.length || 0} changes
+                      </span>
+                    </div>
 
-                    {selectedHero.patchHistory && selectedHero.patchHistory.length > 0 ? (
+                    {selectedHero.patchHistory && selectedHero.patchHistory.length > 0 && (
+                      <div className="flex flex-wrap gap-1 p-1 bg-zinc-950 rounded border border-zinc-800 text-[11px]">
+                        <button
+                          onClick={() => setPatchFilter('all')}
+                          className={`px-2 py-0.5 rounded transition-colors cursor-pointer ${
+                            patchFilter === 'all'
+                              ? 'bg-zinc-800 text-zinc-100 font-medium'
+                              : 'text-zinc-400 hover:text-zinc-200'
+                          }`}
+                        >
+                          All ({patchCounts.all})
+                        </button>
+                        {patchCounts.buff > 0 && (
+                          <button
+                            onClick={() => setPatchFilter('buff')}
+                            className={`px-2 py-0.5 rounded transition-colors cursor-pointer ${
+                              patchFilter === 'buff'
+                                ? 'bg-emerald-950 text-emerald-300 border border-emerald-800 font-medium'
+                                : 'text-zinc-400 hover:text-emerald-400'
+                            }`}
+                          >
+                            Buffs ({patchCounts.buff})
+                          </button>
+                        )}
+                        {patchCounts.nerf > 0 && (
+                          <button
+                            onClick={() => setPatchFilter('nerf')}
+                            className={`px-2 py-0.5 rounded transition-colors cursor-pointer ${
+                              patchFilter === 'nerf'
+                                ? 'bg-rose-950 text-rose-300 border border-rose-800 font-medium'
+                                : 'text-zinc-400 hover:text-rose-400'
+                            }`}
+                          >
+                            Nerfs ({patchCounts.nerf})
+                          </button>
+                        )}
+                        {patchCounts.adjustment > 0 && (
+                          <button
+                            onClick={() => setPatchFilter('adjustment')}
+                            className={`px-2 py-0.5 rounded transition-colors cursor-pointer ${
+                              patchFilter === 'adjustment'
+                                ? 'bg-amber-950 text-amber-300 border border-amber-800 font-medium'
+                                : 'text-zinc-400 hover:text-amber-400'
+                            }`}
+                          >
+                            Adjustments ({patchCounts.adjustment})
+                          </button>
+                        )}
+                        {patchCounts.revamp > 0 && (
+                          <button
+                            onClick={() => setPatchFilter('revamp')}
+                            className={`px-2 py-0.5 rounded transition-colors cursor-pointer ${
+                              patchFilter === 'revamp'
+                                ? 'bg-purple-950 text-purple-300 border border-purple-800 font-medium'
+                                : 'text-zinc-400 hover:text-purple-400'
+                            }`}
+                          >
+                            Revamps ({patchCounts.revamp})
+                          </button>
+                        )}
+                      </div>
+                    )}
+
+                    {/* Timeline List */}
+                    {heroPatchList.length > 0 ? (
                       <div className="space-y-2.5 max-h-[500px] overflow-y-auto pr-0.5">
-                        {selectedHero.patchHistory.map((change, idx) => {
+                        {heroPatchList.map((change, idx) => {
                           const badgeColor =
                             change.type === 'buff'
                               ? 'bg-emerald-950/70 text-emerald-300 border-emerald-800/60'
@@ -770,24 +887,54 @@ export const HeroDatabase: React.FC = () => {
 
                           return (
                             <div
-                              key={idx}
-                              className="p-3 rounded-lg border border-zinc-800 bg-zinc-950 space-y-1.5"
+                              key={change.id || idx}
+                              className="p-3 rounded-lg border border-zinc-800 bg-zinc-950 space-y-2"
                             >
-                              <div className="flex items-center justify-between gap-2">
-                                <div className="flex items-center gap-1.5">
-                                  <span
-                                    className={`px-1.5 py-0.2 rounded text-[9px] font-mono uppercase font-semibold border ${badgeColor}`}
-                                  >
-                                    {change.type}
-                                  </span>
-                                  <span className="font-semibold text-xs text-zinc-200">
-                                    {change.title}
-                                  </span>
+                              <div className="flex items-start justify-between gap-2">
+                                <div className="space-y-1">
+                                  <div className="flex items-center gap-1.5 flex-wrap">
+                                    <span
+                                      className={`px-1.5 py-0.2 rounded text-[9px] font-mono uppercase font-semibold border ${badgeColor}`}
+                                    >
+                                      {change.type}
+                                    </span>
+                                    <h4 className="font-semibold text-xs text-zinc-100">
+                                      {change.title}
+                                    </h4>
+                                  </div>
+                                  <div className="text-[10px] text-zinc-400 font-mono">
+                                    <span className="text-zinc-500 uppercase">Affected: </span>
+                                    <strong className="text-zinc-300 font-medium">
+                                      {change.affectedSkillOrAttribute}
+                                    </strong>
+                                  </div>
                                 </div>
-                                <span className="text-[10px] font-mono text-zinc-500">
-                                  {change.patchVersion}
+                                <span className="text-[10px] font-mono text-zinc-500 shrink-0">
+                                  {change.patchVersion} ({change.date})
                                 </span>
                               </div>
+
+                              {/* Numerical Comparison Block */}
+                              {(change.previousValue || change.newValue) && (
+                                <div className="p-2 rounded bg-zinc-900/60 border border-zinc-850 text-[10px] grid grid-cols-1 sm:grid-cols-2 gap-1.5 font-mono">
+                                  {change.previousValue && (
+                                    <div className="text-zinc-400">
+                                      <span className="text-rose-400 block font-semibold text-[9px] uppercase tracking-wider">
+                                        Previous Value
+                                      </span>
+                                      <span className="text-zinc-300">{change.previousValue}</span>
+                                    </div>
+                                  )}
+                                  {change.newValue && (
+                                    <div className="text-zinc-300">
+                                      <span className="text-emerald-400 block font-semibold text-[9px] uppercase tracking-wider">
+                                        New Value
+                                      </span>
+                                      <span className="text-zinc-100">{change.newValue}</span>
+                                    </div>
+                                  )}
+                                </div>
+                              )}
 
                               <p className="text-[11px] text-zinc-300 leading-relaxed">
                                 {change.summary}
@@ -803,7 +950,18 @@ export const HeroDatabase: React.FC = () => {
 
                               {change.sourceUrl && (
                                 <div className="pt-1.5 border-t border-zinc-900 flex items-center justify-between text-[10px]">
-                                  <span className="text-zinc-500 truncate">{change.sourceName || 'Patch Documentation'}</span>
+                                  <div className="flex items-center gap-1.5">
+                                    <span className={`px-1.5 py-0.2 rounded text-[8px] font-mono uppercase border ${
+                                      change.sourceType === 'official'
+                                        ? 'bg-sky-950 text-sky-300 border-sky-800'
+                                        : 'bg-zinc-900 text-zinc-400 border-zinc-800'
+                                    }`}>
+                                      {change.sourceType === 'official' ? 'Official Moonton' : 'Secondary (Liquipedia)'}
+                                    </span>
+                                    <span className="text-zinc-500 truncate max-w-[130px] hidden sm:inline">
+                                      {change.sourceName}
+                                    </span>
+                                  </div>
                                   <a
                                     href={change.sourceUrl}
                                     target="_blank"
@@ -821,9 +979,15 @@ export const HeroDatabase: React.FC = () => {
                       </div>
                     ) : (
                       <div className="p-4 rounded bg-zinc-950 border border-zinc-800 text-center space-y-1">
-                        <p className="text-xs text-zinc-400 font-medium">No Specific Patch Notes Indexed</p>
+                        <p className="text-xs text-zinc-400 font-medium">
+                          {patchFilter === 'all'
+                            ? 'No Specific Patch Notes Indexed'
+                            : `No ${patchFilter.toUpperCase()} Records`}
+                        </p>
                         <p className="text-[10px] text-zinc-500">
-                          {selectedHero.name}’s kit conforms to the active Original Server baseline ({CURRENT_ORIGINAL_SERVER_PATCH}). Specific historical patch documentation is pending verification.
+                          {patchFilter === 'all'
+                            ? `${selectedHero.name}’s kit conforms to the active Original Server baseline (${CURRENT_ORIGINAL_SERVER_PATCH}). Specific historical patch documentation is pending verification.`
+                            : `There are no recorded ${patchFilter} adjustments for ${selectedHero.name} in the active patch registry.`}
                         </p>
                       </div>
                     )}

@@ -2417,14 +2417,15 @@ export const HEROES: Hero[] = RAW_HEROES.map((h) => {
       currentPatch: CURRENT_ORIGINAL_SERVER_PATCH,
       lastVerifiedDate: hasDocumentedPatch ? patchHistory[0].date : CURRENT_PATCH_DATE,
       source: hasDocumentedPatch
-        ? (patchHistory[0].sourceName || OFFICIAL_PATCH_SOURCE)
+        ? patchHistory[0].sourceName
         : 'Community Reference Baseline',
       sourceUrl: hasDocumentedPatch
-        ? (patchHistory[0].sourceUrl || OFFICIAL_PATCH_ARCHIVE_URL)
-        : 'https://liquipedia.net/mobilelegends/Hero',
+        ? patchHistory[0].sourceUrl
+        : OFFICIAL_PATCH_ARCHIVE_URL,
+      sourceType: hasDocumentedPatch ? patchHistory[0].sourceType : 'secondary',
       verificationStatus: isVerified ? 'verified' : 'unverified',
       evidenceNotes: isVerified
-        ? `Verified against ${patchHistory[0].patchVersion} official patch documentation.`
+        ? `Verified against ${patchHistory[0].patchVersion} (${patchHistory[0].type.toUpperCase()}: ${patchHistory[0].affectedSkillOrAttribute}).`
         : 'Core mechanics and attributes reflect in-game baseline. Specific patch change logs pending verification.'
     }
   };

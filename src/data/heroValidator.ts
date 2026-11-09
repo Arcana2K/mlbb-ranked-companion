@@ -1,4 +1,5 @@
 import { Hero } from '../types/mlbb';
+import { CURRENT_PATCH_CONFIG } from './patchConfig';
 
 export const EXPECTED_HERO_COUNT = 133;
 
@@ -11,20 +12,21 @@ export interface HeroCatalogValidationReport {
     unverifiedHeroes: number;
     heroesWithPatchHistory: number;
     totalPatchChanges: number;
+    totalVerifiedPatchRecords: number;
+    totalUnverifiedPatchRecords: number;
+    latestOriginalServerPatch: string;
   };
 }
 
 /**
- * Strict validator to guarantee catalog completeness, uniqueness, skill integrity,
- * source credibility, and verification status accuracy.
- *
- * Rules:
- * - Checks completeness against official MLBB roster count.
- * - Detects duplicate hero IDs.
- * - Enforces required attributes, abilities, and mechanics.
- * - Rejects generic root domain (e.g., 'https://www.mobilelegends.com') as valid evidence for hero verification.
- * - Validates patch change structure, dates, and specific source URLs.
- * - Distinguishes verified vs unverified entries instead of treating presence as proof of accuracy.
+ * Strict validator for MLBB Hero Database and Patch History.
+ * Audits:
+ * 1. Completeness, uniqueness, and reference integrity.
+ * 2. Ability kits, descriptions, and mechanics checklists.
+ * 3. Verification labels and absence of generic homepage sources.
+ * 4. Patch changes: patchVersion, date format (YYYY-MM-DD), category, affected skill,
+ *    numerical previous/new values when present, source type, and duplication detection.
+ * 5. Conflict detection between current hero attributes and documented revamps.
  */
 export function validateHeroCatalog(heroes: Hero[]): HeroCatalogValidationReport {
   const errors: string[] = [];
@@ -34,13 +36,15 @@ export function validateHeroCatalog(heroes: Hero[]): HeroCatalogValidationReport
   let unverifiedHeroes = 0;
   let heroesWithPatchHistory = 0;
   let totalPatchChanges = 0;
+  let totalVerifiedPatchRecords = 0;
+  let totalUnverifiedPatchRecords = 0;
 
-  // 1. Check catalog completeness against official MLBB roster count
+  // 1. Catalog completeness
   if (heroes.length < EXPECTED_HERO_COUNT) {
     errors.push(`Hero catalog is incomplete: expected at least ${EXPECTED_HERO_COUNT} heroes, found ${heroes.length}`);
   }
 
-  // 2. Audit core hero attributes and ID uniqueness
+  // 2. Audit core attributes & ID uniqueness
   for (const h of heroes) {
     if (!h.id || typeof h.id !== 'string') {
       errors.push(`Hero missing valid id: ${JSON.stringify(h)}`);
@@ -68,9 +72,9 @@ export function validateHeroCatalog(heroes: Hero[]): HeroCatalogValidationReport
     }
   }
 
-  // 3. Audit abilities, mechanics, verification status, and patch evidence
+  // 3. Audit abilities, mechanics, verification, and patch history
   for (const h of heroes) {
-    // Audit Ability Kit completeness
+    // Audit Abilities
     if (!Array.isArray(h.skills) || h.skills.length < 3) {
       errors.push(`Hero ${h.id} missing complete ability kit (found ${h.skills?.length || 0} skills)`);
     } else {
@@ -104,20 +108,22 @@ export function validateHeroCatalog(heroes: Hero[]): HeroCatalogValidationReport
       if (v.verificationStatus === 'verified') {
         verifiedHeroes++;
 
-        // A verified hero MUST have specific source information, NOT a generic root homepage
         if (!v.sourceUrl || v.sourceUrl.trim() === '') {
           errors.push(`Hero ${h.id} marked as verified but missing source URL`);
         } else if (
           v.sourceUrl === 'https://www.mobilelegends.com' ||
           v.sourceUrl === 'https://www.mobilelegends.com/'
         ) {
-          errors.push(
-            `Hero ${h.id} uses generic homepage as verification evidence instead of specific patch notes or documentation.`
-          );
+          errors.push(`Hero ${h.id} uses generic homepage as verification evidence instead of specific patch notes.`);
         }
 
         if (!v.source || v.source.trim() === '') {
           errors.push(`Hero ${h.id} marked as verified but missing source name`);
+        }
+
+        // Check source labeling honesty: secondary source must not be labeled as official
+        if (v.sourceUrl.includes('liquipedia.net') && v.sourceType === 'official') {
+          errors.push(`Hero ${h.id} incorrectly labels Liquipedia secondary source as official Moonton source`);
         }
       } else if (v.verificationStatus === 'unverified') {
         unverifiedHeroes++;
@@ -131,7 +137,22 @@ export function validateHeroCatalog(heroes: Hero[]): HeroCatalogValidationReport
       heroesWithPatchHistory++;
       totalPatchChanges += h.patchHistory.length;
 
+      const patchKeySet = new Set<string>();
+
       for (const patch of h.patchHistory) {
+        if (patch.verificationStatus === 'verified') {
+          totalVerifiedPatchRecords++;
+        } else {
+          totalUnverifiedPatchRecords++;
+        }
+
+        // Duplicate patch record detection per hero
+        const patchKey = `${patch.patchVersion}::${patch.affectedSkillOrAttribute || patch.title}`;
+        if (patchKeySet.has(patchKey)) {
+          errors.push(`Hero ${h.id} has duplicate patch record: "${patchKey}"`);
+        }
+        patchKeySet.add(patchKey);
+
         if (!patch.patchVersion || patch.patchVersion.trim() === '') {
           errors.push(`Hero ${h.id} has patch change missing patchVersion`);
         }
@@ -144,10 +165,14 @@ export function validateHeroCatalog(heroes: Hero[]): HeroCatalogValidationReport
         if (!patch.title || !patch.summary) {
           errors.push(`Hero ${h.id} has patch change missing title or summary`);
         }
+        if (!patch.affectedSkillOrAttribute || patch.affectedSkillOrAttribute.trim() === '') {
+          errors.push(`Hero ${h.id} patch change "${patch.title}" missing affectedSkillOrAttribute`);
+        }
         if (!Array.isArray(patch.details) || patch.details.length === 0) {
           errors.push(`Hero ${h.id} has patch change missing details array`);
         }
-        // Patch changes must cite a specific source URL
+
+        // Audit Source Credibility
         if (!patch.sourceUrl || patch.sourceUrl.trim() === '') {
           errors.push(`Hero ${h.id} has patch change "${patch.title}" missing specific sourceUrl`);
         } else if (
@@ -156,6 +181,39 @@ export function validateHeroCatalog(heroes: Hero[]): HeroCatalogValidationReport
         ) {
           errors.push(`Hero ${h.id} patch change uses generic homepage instead of specific patch notes source`);
         }
+
+        // Audit Source Type Labeling
+        if (patch.sourceUrl.includes('liquipedia.net') && patch.sourceType === 'official') {
+          errors.push(`Hero ${h.id} patch change "${patch.title}" mislabels Liquipedia secondary source as official`);
+        }
+      }
+    }
+
+    // 4. Conflict detection between current hero data and documented patch changes
+    if (h.id === 'phoveus') {
+      const hasPhysicalRevamp = h.patchHistory?.some(
+        (p) => p.type === 'revamp' && p.details.some((d) => d.toLowerCase().includes('physical damage'))
+      );
+      if (hasPhysicalRevamp && h.damageType !== 'Physical') {
+        errors.push(`Conflict: Phoveus has documented Physical Damage revamp but catalog damageType is "${h.damageType}"`);
+      }
+    }
+
+    if (h.id === 'alice') {
+      const hasTankRework = h.patchHistory?.some(
+        (p) => p.type === 'rework' && p.title.toLowerCase().includes('tank')
+      );
+      if (hasTankRework && h.primaryRole !== 'Tank' && h.secondaryRole !== 'Tank') {
+        errors.push(`Conflict: Alice has documented Tank/Initiator rework but roles are "${h.primaryRole}/${h.secondaryRole}"`);
+      }
+    }
+
+    if (h.id === 'granger') {
+      const hasDemonicEnergy = h.patchHistory?.some(
+        (p) => p.type === 'rework' && p.title.toLowerCase().includes('demonic energy')
+      );
+      if (hasDemonicEnergy && h.gameplayMechanics?.resourceType !== 'Demonic Energy') {
+        errors.push(`Conflict: Granger has documented Demonic Energy rework but resourceType is "${h.gameplayMechanics?.resourceType}"`);
       }
     }
 
@@ -185,7 +243,10 @@ export function validateHeroCatalog(heroes: Hero[]): HeroCatalogValidationReport
       verifiedHeroes,
       unverifiedHeroes,
       heroesWithPatchHistory,
-      totalPatchChanges
+      totalPatchChanges,
+      totalVerifiedPatchRecords,
+      totalUnverifiedPatchRecords,
+      latestOriginalServerPatch: CURRENT_PATCH_CONFIG.latestOriginalServerPatch
     }
   };
 }
