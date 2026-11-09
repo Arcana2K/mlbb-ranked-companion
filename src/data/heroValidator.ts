@@ -1,16 +1,19 @@
 import { Hero } from '../types/mlbb';
-import { CURRENT_PATCH_CONFIG } from './patchConfig';
+import { CURRENT_PATCH_CONFIG, isRegisteredPatch, getPatchReleaseDate } from './patchConfig';
 
 export const EXPECTED_HERO_COUNT = 133;
 
 export interface HeroCatalogValidationReport {
   valid: boolean;
   errors: string[];
+  warnings: string[];
+  unverifiedItems: string[];
   stats: {
     totalHeroes: number;
-    verifiedHeroes: number;
+    fullyVerifiedHeroes: number;
+    partiallyVerifiedHeroes: number;
     unverifiedHeroes: number;
-    heroesWithPatchHistory: number;
+    heroesWithVerifiedPatchHistory: number;
     totalPatchChanges: number;
     totalVerifiedPatchRecords: number;
     totalUnverifiedPatchRecords: number;
@@ -19,42 +22,49 @@ export interface HeroCatalogValidationReport {
 }
 
 /**
- * Strict validator for MLBB Hero Database and Patch History.
+ * Strict and granular validator for MLBB Hero Database and Patch History.
  * Audits:
- * 1. Completeness, uniqueness, and reference integrity.
- * 2. Ability kits, descriptions, and mechanics checklists.
- * 3. Verification labels and absence of generic homepage sources.
- * 4. Patch changes: patchVersion, date format (YYYY-MM-DD), category, affected skill,
- *    numerical previous/new values when present, source type, and duplication detection.
- * 5. Conflict detection between current hero attributes and documented revamps.
+ * 1. Completeness, uniqueness, and cross-reference integrity against the entire roster.
+ * 2. Ability kits, descriptions, cooldowns/energy, and mechanics checklists.
+ * 3. Strict separation of errors, warnings, and unverified data.
+ * 4. Granular verification states: skills, mechanics, patch history, and current patch status.
+ * 5. Patch changes: patchVersion registry lookup, release date consistency, category, affected skill,
+ *    numerical previous/new values when claims are made, source credibility, and duplicate detection.
+ * 6. Conflict detection between current hero attributes and documented revamps/reworks.
  */
 export function validateHeroCatalog(heroes: Hero[]): HeroCatalogValidationReport {
   const errors: string[] = [];
-  const idSet = new Set<string>();
+  const warnings: string[] = [];
+  const unverifiedItems: string[] = [];
 
-  let verifiedHeroes = 0;
+  // Build the complete ID collection first to check references without iteration-order biases
+  const completeHeroIdSet = new Set<string>();
+  for (const h of heroes) {
+    if (h.id && typeof h.id === 'string') {
+      if (completeHeroIdSet.has(h.id)) {
+        errors.push(`Duplicate hero ID detected: ${h.id}`);
+      }
+      completeHeroIdSet.add(h.id);
+    } else {
+      errors.push(`Hero missing valid id: ${JSON.stringify(h)}`);
+    }
+  }
+
+  let fullyVerifiedHeroes = 0;
+  let partiallyVerifiedHeroes = 0;
   let unverifiedHeroes = 0;
-  let heroesWithPatchHistory = 0;
+  let heroesWithVerifiedPatchHistory = 0;
   let totalPatchChanges = 0;
   let totalVerifiedPatchRecords = 0;
   let totalUnverifiedPatchRecords = 0;
 
-  // 1. Catalog completeness
+  // 1. Catalog completeness check
   if (heroes.length < EXPECTED_HERO_COUNT) {
     errors.push(`Hero catalog is incomplete: expected at least ${EXPECTED_HERO_COUNT} heroes, found ${heroes.length}`);
   }
 
-  // 2. Audit core attributes & ID uniqueness
+  // 2. Audit core attributes, ability kits, mechanics, and verification
   for (const h of heroes) {
-    if (!h.id || typeof h.id !== 'string') {
-      errors.push(`Hero missing valid id: ${JSON.stringify(h)}`);
-      continue;
-    }
-    if (idSet.has(h.id)) {
-      errors.push(`Duplicate hero ID detected: ${h.id}`);
-    }
-    idSet.add(h.id);
-
     if (!h.name) errors.push(`Hero ${h.id} missing official name`);
     if (!h.avatar) errors.push(`Hero ${h.id} missing avatar URL`);
     if (!h.primaryRole) errors.push(`Hero ${h.id} missing primaryRole`);
@@ -70,10 +80,7 @@ export function validateHeroCatalog(heroes: Hero[]): HeroCatalogValidationReport
     if (!Array.isArray(h.weaknesses) || h.weaknesses.length === 0) {
       errors.push(`Hero ${h.id} missing weaknesses array`);
     }
-  }
 
-  // 3. Audit abilities, mechanics, verification, and patch history
-  for (const h of heroes) {
     // Audit Abilities
     if (!Array.isArray(h.skills) || h.skills.length < 3) {
       errors.push(`Hero ${h.id} missing complete ability kit (found ${h.skills?.length || 0} skills)`);
@@ -100,41 +107,74 @@ export function validateHeroCatalog(heroes: Hero[]): HeroCatalogValidationReport
       }
     }
 
-    // Audit Verification Metadata
+    // Audit Verification Metadata and Granular States
     if (!h.verification) {
       errors.push(`Hero ${h.id} missing verification metadata`);
     } else {
       const v = h.verification;
+
+      // Track stats based on overall verification
       if (v.verificationStatus === 'verified') {
-        verifiedHeroes++;
-
-        if (!v.sourceUrl || v.sourceUrl.trim() === '') {
-          errors.push(`Hero ${h.id} marked as verified but missing source URL`);
-        } else if (
-          v.sourceUrl === 'https://www.mobilelegends.com' ||
-          v.sourceUrl === 'https://www.mobilelegends.com/'
-        ) {
-          errors.push(`Hero ${h.id} uses generic homepage as verification evidence instead of specific patch notes.`);
-        }
-
-        if (!v.source || v.source.trim() === '') {
-          errors.push(`Hero ${h.id} marked as verified but missing source name`);
-        }
-
-        // Check source labeling honesty: secondary source must not be labeled as official
-        if (v.sourceUrl.includes('liquipedia.net') && v.sourceType === 'official') {
-          errors.push(`Hero ${h.id} incorrectly labels Liquipedia secondary source as official Moonton source`);
-        }
+        fullyVerifiedHeroes++;
+      } else if (v.verificationStatus === 'partial') {
+        partiallyVerifiedHeroes++;
       } else if (v.verificationStatus === 'unverified') {
         unverifiedHeroes++;
       } else {
         errors.push(`Hero ${h.id} has invalid verificationStatus: "${v.verificationStatus}"`);
       }
+
+      // Check granular status values
+      if (!['verified', 'unverified', 'community_reference'].includes(v.skillsVerificationStatus)) {
+        errors.push(`Hero ${h.id} has invalid skillsVerificationStatus: "${v.skillsVerificationStatus}"`);
+      }
+      if (!['verified', 'unverified', 'community_reference'].includes(v.mechanicsVerificationStatus)) {
+        errors.push(`Hero ${h.id} has invalid mechanicsVerificationStatus: "${v.mechanicsVerificationStatus}"`);
+      }
+      if (!['verified', 'unverified', 'partial'].includes(v.patchHistoryVerificationStatus)) {
+        errors.push(`Hero ${h.id} has invalid patchHistoryVerificationStatus: "${v.patchHistoryVerificationStatus}"`);
+      }
+      if (!['verified', 'unverified'].includes(v.currentPatchVerificationStatus)) {
+        errors.push(`Hero ${h.id} has invalid currentPatchVerificationStatus: "${v.currentPatchVerificationStatus}"`);
+      }
+
+      // Strict enforcement: A hero cannot be fully verified unless skills, mechanics, and current patch are verified
+      if (v.verificationStatus === 'verified') {
+        if (v.skillsVerificationStatus !== 'verified') {
+          errors.push(`Hero ${h.id} marked as fully verified but skillsVerificationStatus is "${v.skillsVerificationStatus}"`);
+        }
+        if (v.currentPatchVerificationStatus !== 'verified') {
+          errors.push(`Hero ${h.id} marked as fully verified but currentPatchVerificationStatus is "${v.currentPatchVerificationStatus}"`);
+        }
+        if (!v.sourceUrl || v.sourceUrl.trim() === '') {
+          errors.push(`Hero ${h.id} marked as verified but missing source URL`);
+        }
+      }
+
+      // Source URL validation
+      if (
+        v.sourceUrl === 'https://www.mobilelegends.com' ||
+        v.sourceUrl === 'https://www.mobilelegends.com/'
+      ) {
+        errors.push(`Hero ${h.id} uses generic homepage as verification evidence instead of specific patch notes.`);
+      }
+
+      // Check source labeling honesty: secondary source must not be labeled as official
+      if (v.sourceUrl && v.sourceUrl.includes('liquipedia.net') && v.sourceType === 'official') {
+        errors.push(`Hero ${h.id} incorrectly labels Liquipedia secondary source as official Moonton source`);
+      }
+
+      // Log unverified baseline info for transparency
+      if (v.skillsVerificationStatus === 'community_reference') {
+        unverifiedItems.push(`Hero ${h.id} abilities are based on community reference baseline`);
+      }
     }
 
     // Audit Patch History Changes
     if (h.patchHistory && h.patchHistory.length > 0) {
-      heroesWithPatchHistory++;
+      if (h.verification?.patchHistoryVerificationStatus === 'verified') {
+        heroesWithVerifiedPatchHistory++;
+      }
       totalPatchChanges += h.patchHistory.length;
 
       const patchKeySet = new Set<string>();
@@ -144,6 +184,7 @@ export function validateHeroCatalog(heroes: Hero[]): HeroCatalogValidationReport
           totalVerifiedPatchRecords++;
         } else {
           totalUnverifiedPatchRecords++;
+          unverifiedItems.push(`Hero ${h.id} patch record "${patch.title}" (${patch.patchVersion}) is marked unverified`);
         }
 
         // Duplicate patch record detection per hero
@@ -155,7 +196,18 @@ export function validateHeroCatalog(heroes: Hero[]): HeroCatalogValidationReport
 
         if (!patch.patchVersion || patch.patchVersion.trim() === '') {
           errors.push(`Hero ${h.id} has patch change missing patchVersion`);
+        } else {
+          // Check against historical patch registry
+          if (!isRegisteredPatch(patch.patchVersion)) {
+            warnings.push(`Hero ${h.id} references unregistered patch version: "${patch.patchVersion}"`);
+          } else {
+            const expectedDate = getPatchReleaseDate(patch.patchVersion);
+            if (expectedDate && patch.date !== expectedDate) {
+              warnings.push(`Hero ${h.id} patch ${patch.patchVersion} date (${patch.date}) does not match registry release date (${expectedDate})`);
+            }
+          }
         }
+
         if (!patch.date || !/^\d{4}-\d{2}-\d{2}$/.test(patch.date)) {
           errors.push(`Hero ${h.id} has patch change with invalid date format (expected YYYY-MM-DD): "${patch.date}"`);
         }
@@ -170,6 +222,14 @@ export function validateHeroCatalog(heroes: Hero[]): HeroCatalogValidationReport
         }
         if (!Array.isArray(patch.details) || patch.details.length === 0) {
           errors.push(`Hero ${h.id} has patch change missing details array`);
+        }
+
+        // Numerical changes detection: if summary or details cite specific numbers/scaling, previous/new values must be present
+        const hasNumericalClaims =
+          /\d+/.test(patch.summary) ||
+          patch.details.some((d) => /\d+/.test(d));
+        if (hasNumericalClaims && (!patch.previousValue || !patch.newValue)) {
+          warnings.push(`Hero ${h.id} patch change "${patch.title}" makes numerical claims but lacks explicit previousValue or newValue`);
         }
 
         // Audit Source Credibility
@@ -189,7 +249,7 @@ export function validateHeroCatalog(heroes: Hero[]): HeroCatalogValidationReport
       }
     }
 
-    // 4. Conflict detection between current hero data and documented patch changes
+    // 3. Conflict detection between current hero data and documented patch changes
     if (h.id === 'phoveus') {
       const hasPhysicalRevamp = h.patchHistory?.some(
         (p) => p.type === 'revamp' && p.details.some((d) => d.toLowerCase().includes('physical damage'))
@@ -217,19 +277,19 @@ export function validateHeroCatalog(heroes: Hero[]): HeroCatalogValidationReport
       }
     }
 
-    // Audit Matchup Reference Integrity
+    // 4. Audit Matchup Reference Integrity against complete roster collection
     for (const c of h.counters || []) {
-      if (!idSet.has(c)) {
+      if (!completeHeroIdSet.has(c)) {
         errors.push(`Hero ${h.id} has invalid counter reference: "${c}"`);
       }
     }
     for (const c of h.counteredBy || []) {
-      if (!idSet.has(c)) {
+      if (!completeHeroIdSet.has(c)) {
         errors.push(`Hero ${h.id} has invalid counteredBy reference: "${c}"`);
       }
     }
     for (const s of h.synergies || []) {
-      if (!idSet.has(s)) {
+      if (!completeHeroIdSet.has(s)) {
         errors.push(`Hero ${h.id} has invalid synergy reference: "${s}"`);
       }
     }
@@ -238,11 +298,14 @@ export function validateHeroCatalog(heroes: Hero[]): HeroCatalogValidationReport
   return {
     valid: errors.length === 0,
     errors,
+    warnings,
+    unverifiedItems,
     stats: {
       totalHeroes: heroes.length,
-      verifiedHeroes,
+      fullyVerifiedHeroes,
+      partiallyVerifiedHeroes,
       unverifiedHeroes,
-      heroesWithPatchHistory,
+      heroesWithVerifiedPatchHistory,
       totalPatchChanges,
       totalVerifiedPatchRecords,
       totalUnverifiedPatchRecords,

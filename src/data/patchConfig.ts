@@ -220,11 +220,85 @@ export const HISTORICAL_PATCH_REGISTRY: HistoricalPatchMeta[] = [
     sourceName: 'Liquipedia MLBB Patch Archive'
   },
   {
+    patchVersion: 'Patch 1.8.47',
+    releaseDate: '2024-01-09',
+    majorTheme: 'Balance Tuning: Post-Cici Follow-up Hotfix',
+    sourceUrl: 'https://liquipedia.net/mobilelegends/Patch_1.8.47',
+    sourceType: 'secondary',
+    sourceName: 'Liquipedia MLBB Patch Archive'
+  },
+  {
+    patchVersion: 'Patch 1.7.94',
+    releaseDate: '2023-06-27',
+    majorTheme: 'Project NEXT 2023: Season 29 Official Server Debut & Emblem Revamp',
+    sourceUrl: 'https://liquipedia.net/mobilelegends/Patch_1.7.94',
+    sourceType: 'secondary',
+    sourceName: 'Liquipedia MLBB Patch Archive'
+  },
+  {
     patchVersion: 'Patch 1.7.82B',
     releaseDate: '2023-05-30',
     majorTheme: 'High-Rank Competitive Tuning: Joy Damage Scaling & Arlott Vengeance Nerf',
     sourceUrl: 'https://liquipedia.net/mobilelegends/Patch_1.7.82B',
     sourceType: 'secondary',
     sourceName: 'Liquipedia MLBB Patch Archive'
+  },
+  {
+    patchVersion: 'Patch 1.7.58',
+    releaseDate: '2023-02-14',
+    majorTheme: 'Hero Release: Arlott (Lone Lancer)',
+    sourceUrl: 'https://liquipedia.net/mobilelegends/Patch_1.7.58',
+    sourceType: 'secondary',
+    sourceName: 'Liquipedia MLBB Patch Archive'
+  },
+  {
+    patchVersion: 'Patch 1.7.44',
+    releaseDate: '2022-12-20',
+    majorTheme: 'M4 World Championship Update: Beatrix & Wanwan Rebalance',
+    sourceUrl: 'https://liquipedia.net/mobilelegends/Patch_1.7.44',
+    sourceType: 'secondary',
+    sourceName: 'Liquipedia MLBB Patch Archive'
+  },
+  {
+    patchVersion: 'Patch 1.7.20',
+    releaseDate: '2022-09-20',
+    majorTheme: 'Project NEXT 2022: Gusion & Lesley Revamps',
+    sourceUrl: 'https://liquipedia.net/mobilelegends/Patch_1.7.20',
+    sourceType: 'secondary',
+    sourceName: 'Liquipedia MLBB Patch Archive'
   }
 ];
+
+/**
+ * Checks whether a given patch version is in the registered historical patch database.
+ */
+export function isRegisteredPatch(patchVersion: string): boolean {
+  return HISTORICAL_PATCH_REGISTRY.some((p) => p.patchVersion === patchVersion);
+}
+
+/**
+ * Retrieves the official release date for a given patch version.
+ */
+export function getPatchReleaseDate(patchVersion: string): string | undefined {
+  return HISTORICAL_PATCH_REGISTRY.find((p) => p.patchVersion === patchVersion)?.releaseDate;
+}
+
+/**
+ * Retrieves full patch metadata for a registered patch.
+ */
+export function getPatchMetadata(patchVersion: string): HistoricalPatchMeta | undefined {
+  return HISTORICAL_PATCH_REGISTRY.find((p) => p.patchVersion === patchVersion);
+}
+
+/**
+ * Registers a new Original Server patch into the historical registry.
+ * Prevents accidental overwrite of existing historical records.
+ */
+export function registerPatch(patchMeta: HistoricalPatchMeta): boolean {
+  if (isRegisteredPatch(patchMeta.patchVersion)) {
+    return false;
+  }
+  HISTORICAL_PATCH_REGISTRY.unshift(patchMeta);
+  return true;
+}
+

@@ -64,6 +64,8 @@ export interface HeroPatchChange {
   sourceUrl: string;
   sourceType: SourceType;
   verificationStatus: 'verified' | 'unverified';
+  serverType?: 'original' | 'advance';
+  verificationNotes?: string;
 }
 
 export interface PatchConfig {
@@ -79,10 +81,18 @@ export interface HeroVerificationMetadata {
   currentPatch: string;
   lastVerifiedDate: string;
   source: string;
+  sourceName?: string;
   sourceUrl: string;
   sourceType?: SourceType;
-  verificationStatus: 'verified' | 'unverified';
+  verificationStatus: 'verified' | 'unverified' | 'partial';
   evidenceNotes?: string;
+  verificationNotes?: string;
+
+  // Granular verification states per audit requirements
+  skillsVerificationStatus: 'verified' | 'unverified' | 'community_reference';
+  mechanicsVerificationStatus: 'verified' | 'unverified' | 'community_reference';
+  patchHistoryVerificationStatus: 'verified' | 'unverified' | 'partial';
+  currentPatchVerificationStatus: 'verified' | 'unverified';
 }
 
 export interface HeroGameplayMechanics {

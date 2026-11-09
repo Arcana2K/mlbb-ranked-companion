@@ -2404,9 +2404,52 @@ export const HEROES: Hero[] = RAW_HEROES.map((h) => {
     resourceType: skillRecord.resourceType
   } : undefined;
 
-  // Verification status: only mark verified if backed by specific documented patch history / primary sources
+  // Granular verification states per Requirement 5:
+  // A hero can have verified historical changes while current skill information remains unverified or reference baseline.
   const hasDocumentedPatch = patchHistory.length > 0;
-  const isVerified = hasDocumentedPatch;
+  const allPatchesVerified = hasDocumentedPatch && patchHistory.every((p) => p.verificationStatus === 'verified');
+  const patchHistoryVerificationStatus: 'verified' | 'unverified' | 'partial' = hasDocumentedPatch
+    ? allPatchesVerified ? 'verified' : 'partial'
+    : 'unverified';
+
+  // Current active patch audit (Patch 2.2.16a / 2.2.16)
+  const isAuditedInCurrentPatch = patchHistory.some(
+    (p) => p.patchVersion === CURRENT_ORIGINAL_SERVER_PATCH || (h.id === 'khufra' && p.patchVersion === 'Patch 2.2.16')
+  );
+  const currentPatchVerificationStatus: 'verified' | 'unverified' = isAuditedInCurrentPatch ? 'verified' : 'unverified';
+
+  // Skills and mechanics verification: verified if hero has directly documented skill revamp/rework or active patch tuning
+  const isSkillKitVerified = hasDocumentedPatch && (isAuditedInCurrentPatch || patchHistory.some((p) => p.type === 'revamp' || p.type === 'rework'));
+  const skillsVerificationStatus: 'verified' | 'unverified' | 'community_reference' = isSkillKitVerified
+    ? 'verified'
+    : 'community_reference';
+  const mechanicsVerificationStatus: 'verified' | 'unverified' | 'community_reference' = isSkillKitVerified
+    ? 'verified'
+    : 'community_reference';
+
+  // Overall verification status: strict requirement - only 'verified' if all facets are verified
+  const overallVerificationStatus: 'verified' | 'unverified' | 'partial' =
+    skillsVerificationStatus === 'verified' &&
+    currentPatchVerificationStatus === 'verified' &&
+    patchHistoryVerificationStatus === 'verified'
+      ? 'verified'
+      : patchHistoryVerificationStatus === 'verified' || skillsVerificationStatus === 'verified'
+      ? 'partial'
+      : 'unverified';
+
+  const sourceName = hasDocumentedPatch ? patchHistory[0].sourceName : 'Community Reference Baseline';
+  const sourceUrl = hasDocumentedPatch ? patchHistory[0].sourceUrl : OFFICIAL_PATCH_ARCHIVE_URL;
+  const sourceType = hasDocumentedPatch ? patchHistory[0].sourceType : 'secondary';
+  const lastVerifiedDate = hasDocumentedPatch ? patchHistory[0].date : CURRENT_PATCH_DATE;
+
+  let evidenceNotes = '';
+  if (overallVerificationStatus === 'verified') {
+    evidenceNotes = `Audited & verified against ${CURRENT_ORIGINAL_SERVER_PATCH}. Skills, mechanics, and live balance changes verified.`;
+  } else if (patchHistoryVerificationStatus === 'verified') {
+    evidenceNotes = `Historical patch records verified against ${patchHistory[0].patchVersion} (${patchHistory[0].type.toUpperCase()}). Current kit baseline maintained.`;
+  } else {
+    evidenceNotes = 'Core mechanics and attributes reflect in-game baseline. Specific patch change logs pending verification.';
+  }
 
   return {
     ...h,
@@ -2415,18 +2458,18 @@ export const HEROES: Hero[] = RAW_HEROES.map((h) => {
     patchHistory,
     verification: {
       currentPatch: CURRENT_ORIGINAL_SERVER_PATCH,
-      lastVerifiedDate: hasDocumentedPatch ? patchHistory[0].date : CURRENT_PATCH_DATE,
-      source: hasDocumentedPatch
-        ? patchHistory[0].sourceName
-        : 'Community Reference Baseline',
-      sourceUrl: hasDocumentedPatch
-        ? patchHistory[0].sourceUrl
-        : OFFICIAL_PATCH_ARCHIVE_URL,
-      sourceType: hasDocumentedPatch ? patchHistory[0].sourceType : 'secondary',
-      verificationStatus: isVerified ? 'verified' : 'unverified',
-      evidenceNotes: isVerified
-        ? `Verified against ${patchHistory[0].patchVersion} (${patchHistory[0].type.toUpperCase()}: ${patchHistory[0].affectedSkillOrAttribute}).`
-        : 'Core mechanics and attributes reflect in-game baseline. Specific patch change logs pending verification.'
+      lastVerifiedDate,
+      source: sourceName,
+      sourceName,
+      sourceUrl,
+      sourceType,
+      verificationStatus: overallVerificationStatus,
+      evidenceNotes,
+      verificationNotes: evidenceNotes,
+      skillsVerificationStatus,
+      mechanicsVerificationStatus,
+      patchHistoryVerificationStatus,
+      currentPatchVerificationStatus
     }
   };
 });

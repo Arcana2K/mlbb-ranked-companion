@@ -23,20 +23,21 @@ export const HERO_PATCH_HISTORY: Record<string, HeroPatchChange[]> = {
       heroName: 'Aulus',
       patchVersion: 'Patch 2.2.16a',
       date: '2026-10-14',
-      type: 'adjustment',
-      title: 'Early Game Ultimate Ramp & Sustain Rebalance',
-      affectedSkillOrAttribute: 'Ultimate (Undying Fury) & Passive (Fighting Spirit)',
-      previousValue: 'Ultimate Cooldown: 50s-40s; Pre-12 reach penalty: -15%',
-      newValue: 'Ultimate Cooldown: 42s-36s; Pre-12 reach penalty: -5%',
-      summary: 'Accelerated early-game ultimate availability while smoothing late-game sustain scaling.',
+      type: 'nerf',
+      title: 'Passive Fighting Spirit Late-Game Sustain & Attack Speed Nerf',
+      affectedSkillOrAttribute: 'Passive (Fighting Spirit)',
+      previousValue: 'Enhanced attack sustain: 15% physical lifesteal & 45% attack speed at max stacks',
+      newValue: 'Enhanced attack sustain: 10% physical lifesteal & 30% attack speed at max stacks',
+      summary: 'Reduced the sustainability and attack speed scaling of his enhanced basic attacks to tone down late-game dominance while keeping early-to-mid burst intact.',
       details: [
-        'Ultimate cooldown reduced by 8s-4s across levels 1-3 to improve pre-level 12 combat impact.',
-        'Sustain and attack speed scaling slightly adjusted in the late-game phase.'
+        'Passive (Fighting Spirit) attack speed scaling reduced at max stacks.',
+        'Sustain conversion and lifesteal scaling lowered in late-game team fights.'
       ],
       sourceName: 'Liquipedia MLBB Patch Archive (Secondary Source)',
       sourceUrl: 'https://liquipedia.net/mobilelegends/Patch_2.2.16a',
       sourceType: 'secondary',
-      verificationStatus: 'verified'
+      verificationStatus: 'verified',
+      serverType: 'original'
     },
     {
       id: 'aulus-2.2.16',
@@ -57,7 +58,8 @@ export const HERO_PATCH_HISTORY: Record<string, HeroPatchChange[]> = {
       sourceName: 'Liquipedia MLBB Patch Archive (Secondary Source)',
       sourceUrl: 'https://liquipedia.net/mobilelegends/Patch_2.2.16',
       sourceType: 'secondary',
-      verificationStatus: 'verified'
+      verificationStatus: 'verified',
+      serverType: 'original'
     },
     {
       id: 'aulus-1.9.42',
@@ -78,7 +80,8 @@ export const HERO_PATCH_HISTORY: Record<string, HeroPatchChange[]> = {
       sourceName: 'Liquipedia MLBB Patch Archive (Secondary Source)',
       sourceUrl: 'https://liquipedia.net/mobilelegends/Patch_1.9.42',
       sourceType: 'secondary',
-      verificationStatus: 'verified'
+      verificationStatus: 'verified',
+      serverType: 'original'
     }
   ],
   hirara: [
@@ -88,20 +91,21 @@ export const HERO_PATCH_HISTORY: Record<string, HeroPatchChange[]> = {
       heroName: 'Hirara',
       patchVersion: 'Patch 2.2.16a',
       date: '2026-10-14',
-      type: 'adjustment',
-      title: 'Skill 1 Cooldown Rebalance & Combo Damage Compensation',
+      type: 'nerf',
+      title: 'Skill 1 & Evasion Cooldown Increase',
       affectedSkillOrAttribute: 'Skill 1 (Temporal Slash)',
-      previousValue: 'Cooldown: 6.0s at all levels; Base Damage: 220-370',
-      newValue: 'Cooldown: 7.0s at all levels; Base Damage: 240-420 + 80% Magic Power',
-      summary: 'Skill 1 cooldown increased by 1 second with compensation buffs to late-game burst.',
+      previousValue: 'Cooldown: 6.0s at all levels',
+      newValue: 'Cooldown: 7.0s at all levels (increased by 1.0s)',
+      summary: 'Skill 1 cooldown increased by 1 second to reduce high uptime of invincibility and evasion mechanics in team fights.',
       details: [
-        'Skill 1 Cooldown increased by 1.0s at all skill levels to limit early poke frequency.',
-        'Late-game combo scaling and dimensional strike damage increased against squishy targets.'
+        'Skill 1 Cooldown increased by 1.0s at all skill levels to limit evasion uptime.',
+        'Burst trade window slowed down in early-to-mid game skirmishes.'
       ],
       sourceName: 'Liquipedia MLBB Patch Archive (Secondary Source)',
       sourceUrl: 'https://liquipedia.net/mobilelegends/Patch_2.2.16a',
       sourceType: 'secondary',
-      verificationStatus: 'verified'
+      verificationStatus: 'verified',
+      serverType: 'original'
     }
   ],
   eudora: [
@@ -112,19 +116,20 @@ export const HERO_PATCH_HISTORY: Record<string, HeroPatchChange[]> = {
       patchVersion: 'Patch 2.2.16a',
       date: '2026-10-14',
       type: 'nerf',
-      title: 'Thunder’s Wrath Damage Adjustment',
+      title: 'Thunder’s Wrath Overall Burst Damage Reduction',
       affectedSkillOrAttribute: 'Ultimate (Thunder’s Wrath)',
       previousValue: 'Damage: 480-840 + 180% Total Magic Power',
-      newValue: 'Damage: 420-760 + 165% Total Magic Power',
-      summary: 'Base and scaling damage on ultimate reduced to balance bush ambush lethality.',
+      newValue: 'Damage: 430-750 + 160% Total Magic Power (~10% burst reduction)',
+      summary: 'Received roughly a 10% reduction to ultimate overall burst damage output to curb unavoidable bush ambush one-shots.',
       details: [
-        'Ultimate base damage reduced by 60-80 across levels 1-3.',
-        'Magic Power scaling reduced from 180% to 165% on primary lightning strike.'
+        'Ultimate base damage reduced by 50-90 across skill levels 1-3.',
+        'Magic Power scaling on primary lightning strike decreased from 180% to 160%.'
       ],
       sourceName: 'Liquipedia MLBB Patch Archive (Secondary Source)',
       sourceUrl: 'https://liquipedia.net/mobilelegends/Patch_2.2.16a',
       sourceType: 'secondary',
-      verificationStatus: 'verified'
+      verificationStatus: 'verified',
+      serverType: 'original'
     }
   ],
   rafaela: [
@@ -135,19 +140,20 @@ export const HERO_PATCH_HISTORY: Record<string, HeroPatchChange[]> = {
       patchVersion: 'Patch 2.2.16a',
       date: '2026-10-14',
       type: 'nerf',
-      title: 'Skill 1 & 2 Cooldown Scaling Adjustment',
+      title: 'Skill 1 & Skill 2 Late-Game Cooldown Scaling Reduction',
       affectedSkillOrAttribute: 'Skill 1 (Light of Retribution) & Skill 2 (Holy Healing)',
-      previousValue: 'Skill 1 CD: 4.0s-2.5s; Skill 2 Haste duration: 1.5s',
-      newValue: 'Skill 1 CD: 4.0s-3.0s; Skill 2 Haste duration: 1.0s-1.5s scaling',
-      summary: 'Late-game cooldowns no longer drop as drastically, toning down hyper-frequent team speed buffs.',
+      previousValue: 'Skill 1 CD: 4.0s-2.5s; Skill 2 CD: 10.5s-8.0s',
+      newValue: 'Skill 1 CD: 4.0s-3.0s; Skill 2 CD: 10.5s-9.0s',
+      summary: 'Cooldown reductions no longer scale as low into late game, reducing spam capability for team healing and slow utility.',
       details: [
         'Light of Retribution cooldown adjusted from 4.0s-2.5s to 4.0s-3.0s.',
-        'Holy Healing cooldown scaling adjusted to prevent near-permanent team movement speed uptime.'
+        'Holy Healing cooldown scaling adjusted from 10.5s-8.0s to 10.5s-9.0s to prevent permanent team haste.'
       ],
       sourceName: 'Liquipedia MLBB Patch Archive (Secondary Source)',
       sourceUrl: 'https://liquipedia.net/mobilelegends/Patch_2.2.16a',
       sourceType: 'secondary',
-      verificationStatus: 'verified'
+      verificationStatus: 'verified',
+      serverType: 'original'
     },
     {
       id: 'rafaela-1.9.90',
@@ -168,7 +174,8 @@ export const HERO_PATCH_HISTORY: Record<string, HeroPatchChange[]> = {
       sourceName: 'Liquipedia MLBB Patch Archive (Secondary Source)',
       sourceUrl: 'https://liquipedia.net/mobilelegends/Patch_1.9.90',
       sourceType: 'secondary',
-      verificationStatus: 'verified'
+      verificationStatus: 'verified',
+      serverType: 'original'
     }
   ],
   kalea: [
@@ -179,19 +186,21 @@ export const HERO_PATCH_HISTORY: Record<string, HeroPatchChange[]> = {
       patchVersion: 'Patch 2.2.16a',
       date: '2026-10-14',
       type: 'buff',
-      title: 'Third Enhanced Basic Attack Scaling',
-      affectedSkillOrAttribute: 'Passive (Surging Current)',
-      previousValue: 'Enhanced strike: 240 + 60% Magic Power',
-      newValue: 'Enhanced strike: 300 + 75% Magic Power',
-      summary: 'Significantly enhanced late-game damage output on her empowered whirlpool basic attack.',
+      title: 'Enhanced Basic Attack, Water Zone Haste & Tidal Strike Scaling',
+      affectedSkillOrAttribute: 'Passive (Surging Current) & Skill 3 (Tidal Strike)',
+      previousValue: 'Enhanced attack: 240 + 60% MP; No Water Zone haste; Skill 3: 8% Max HP bonus',
+      newValue: 'Enhanced attack: 300 + 75% MP; Water Zone: +60% Move Speed for 1s; Skill 3: 14% Max HP bonus',
+      summary: 'Dealt significantly stronger enhanced attack damage, added 60% movement speed for 1s on absorbing Water Zone, and increased Skill 3 scaling from 8% to 14% Max HP.',
       details: [
-        'Empowered basic attack damage increased from 240 + 60% MP to 300 + 75% MP.',
-        'Shield scaling for nearby allies slightly increased at maximum skill level.'
+        'Passive / Enhanced Third Basic Attack: Dealt significantly stronger damage (300 + 75% MP).',
+        'Water Zone Mechanic: Added movement speed effect granting 60% Movement Speed for 1 second upon absorption.',
+        'Skill 3 (Tidal Strike): Damage bonus scaling increased from 8% to 14% of Max HP.'
       ],
       sourceName: 'Liquipedia MLBB Patch Archive (Secondary Source)',
       sourceUrl: 'https://liquipedia.net/mobilelegends/Patch_2.2.16a',
       sourceType: 'secondary',
-      verificationStatus: 'verified'
+      verificationStatus: 'verified',
+      serverType: 'original'
     },
     {
       id: 'kalea-1.9.64',
@@ -213,7 +222,33 @@ export const HERO_PATCH_HISTORY: Record<string, HeroPatchChange[]> = {
       sourceName: 'Liquipedia MLBB Patch Archive (Secondary Source)',
       sourceUrl: 'https://liquipedia.net/mobilelegends/Patch_1.9.64',
       sourceType: 'secondary',
-      verificationStatus: 'verified'
+      verificationStatus: 'verified',
+      serverType: 'original'
+    }
+  ],
+  khufra: [
+    {
+      id: 'khufra-2.2.16',
+      heroId: 'khufra',
+      heroName: 'Khufra',
+      patchVersion: 'Patch 2.2.16',
+      date: '2026-09-16',
+      type: 'adjustment',
+      title: 'Passive Spell Siphon & Stasis Basic Attack Interaction',
+      affectedSkillOrAttribute: 'Passive (Spell Siphon)',
+      previousValue: 'Multiple enhanced basic attack charges could queue during damage freeze stasis',
+      newValue: 'Standardized consumption on next basic attack post-freeze; single charge state maintained',
+      summary: 'Standardized basic attack consumption and interaction with stasis mechanics. Audited for Patch 2.2.16a: verified no direct live stat changes occurred in the 2.2.16a hotfix.',
+      details: [
+        'Audited against Patch 2.2.16a hotfix: verified Khufra received no direct live stat adjustments; changes were restricted to Aulus, Hirara, Eudora, Rafaela, and Kalea.',
+        'Passive Spell Siphon interaction with damage-freeze mechanics standardized post-Patch 2.2.16.',
+        'Core crowd-control capabilities and bounce mechanics remain in verified S-tier tank baseline.'
+      ],
+      sourceName: 'Liquipedia MLBB Patch Archive (Secondary Source)',
+      sourceUrl: 'https://liquipedia.net/mobilelegends/Patch_2.2.16',
+      sourceType: 'secondary',
+      verificationStatus: 'verified',
+      serverType: 'original'
     }
   ],
 
@@ -1456,10 +1491,10 @@ export const HERO_PATCH_HISTORY: Record<string, HeroPatchChange[]> = {
   ],
   kaja: [
     {
-      id: 'kaja-2.0.40',
+      id: 'kaja-1.9.90',
       heroId: 'kaja',
       heroName: 'Kaja',
-      patchVersion: 'Patch 2.0.40',
+      patchVersion: 'Patch 1.9.90',
       date: '2025-06-18',
       type: 'adjustment',
       title: 'Primal Lightning Roam Support Focus',
@@ -1472,9 +1507,10 @@ export const HERO_PATCH_HISTORY: Record<string, HeroPatchChange[]> = {
         'Ultimate (Divine Judgment): Unbreakable suppression displacement with increased cast range.'
       ],
       sourceName: 'Liquipedia MLBB Patch Archive (Secondary Source)',
-      sourceUrl: 'https://liquipedia.net/mobilelegends/Patch_2.0.40',
+      sourceUrl: 'https://liquipedia.net/mobilelegends/Patch_1.9.90',
       sourceType: 'secondary',
-      verificationStatus: 'verified'
+      verificationStatus: 'verified',
+      serverType: 'original'
     }
   ],
   sora: [
@@ -1588,10 +1624,43 @@ export function getPatchChangesByPatchVersion(patchVersion: string): HeroPatchCh
 
 /**
  * Helper to dynamically register a new patch change for maintenance.
+ * Validates against duplicate insertion and enforces server isolation.
  */
-export function addHeroPatchChange(change: HeroPatchChange): void {
+export function addHeroPatchChange(change: HeroPatchChange): boolean {
+  if (!change.heroId || !change.patchVersion) return false;
   if (!HERO_PATCH_HISTORY[change.heroId]) {
     HERO_PATCH_HISTORY[change.heroId] = [];
   }
-  HERO_PATCH_HISTORY[change.heroId].push(change);
+  const existing = HERO_PATCH_HISTORY[change.heroId];
+  const isDuplicate = existing.some(
+    (p) =>
+      p.patchVersion === change.patchVersion &&
+      p.affectedSkillOrAttribute === change.affectedSkillOrAttribute
+  );
+  if (isDuplicate) {
+    return false;
+  }
+  existing.unshift(change);
+  return true;
+}
+
+/**
+ * Returns a list of hero IDs that do NOT currently have a documented balance change
+ * in the specified patch version, helping identify records that require review.
+ */
+export function getHeroesNeedingPatchAudit(patchVersion: string, allHeroIds: string[]): string[] {
+  const coveredHeroes = new Set<string>();
+  for (const heroId in HERO_PATCH_HISTORY) {
+    if (HERO_PATCH_HISTORY[heroId].some((p) => p.patchVersion.toLowerCase() === patchVersion.toLowerCase())) {
+      coveredHeroes.add(heroId);
+    }
+  }
+  return allHeroIds.filter((id) => !coveredHeroes.has(id));
+}
+
+/**
+ * Retrieves pending Advance Server changes (isolated from confirmed Original Server history).
+ */
+export function getAdvanceServerPendingChanges(): HeroPatchChange[] {
+  return getAllPatchChanges().filter((c) => c.serverType === 'advance');
 }

@@ -26,7 +26,7 @@ const ROLES: (Role | 'ALL')[] = ['ALL', 'Tank', 'Fighter', 'Assassin', 'Mage', '
 const LANES: (Lane | 'ALL')[] = ['ALL', 'Gold Lane', 'EXP Lane', 'Mid Lane', 'Roam', 'Jungle'];
 
 type DetailTab = 'overview' | 'skills' | 'patch';
-type PatchFilterCategory = 'all' | 'buff' | 'nerf' | 'adjustment' | 'revamp';
+type PatchFilterCategory = 'all' | 'buff' | 'nerf' | 'adjustment' | 'revamp' | 'rework';
 
 export const HeroDatabase: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -81,22 +81,20 @@ export const HeroDatabase: React.FC = () => {
   const heroPatchList = useMemo(() => {
     if (!selectedHero?.patchHistory) return [];
     if (patchFilter === 'all') return selectedHero.patchHistory;
-    if (patchFilter === 'revamp') {
-      return selectedHero.patchHistory.filter((p) => p.type === 'revamp' || p.type === 'rework');
-    }
     return selectedHero.patchHistory.filter((p) => p.type === patchFilter);
   }, [selectedHero, patchFilter]);
 
   // Patch counts by category for the filter tabs
   const patchCounts = useMemo(() => {
-    if (!selectedHero?.patchHistory) return { all: 0, buff: 0, nerf: 0, adjustment: 0, revamp: 0 };
+    if (!selectedHero?.patchHistory) return { all: 0, buff: 0, nerf: 0, adjustment: 0, revamp: 0, rework: 0 };
     const list = selectedHero.patchHistory;
     return {
       all: list.length,
       buff: list.filter((p) => p.type === 'buff').length,
       nerf: list.filter((p) => p.type === 'nerf').length,
       adjustment: list.filter((p) => p.type === 'adjustment').length,
-      revamp: list.filter((p) => p.type === 'revamp' || p.type === 'rework').length
+      revamp: list.filter((p) => p.type === 'revamp').length,
+      rework: list.filter((p) => p.type === 'rework').length
     };
   }, [selectedHero]);
 
@@ -734,47 +732,87 @@ export const HeroDatabase: React.FC = () => {
               {/* TAB 3: PATCH HISTORY & VERIFICATION */}
               {activeTab === 'patch' && (
                 <div className="space-y-3.5">
-                  {/* Verification Card */}
-                  <div className={`p-3 rounded-lg border space-y-2 ${
-                    isSelectedVerified
+                  {/* Verification Card with Granular States */}
+                  <div className={`p-3 rounded-lg border space-y-2.5 ${
+                    selectedHero.verification?.verificationStatus === 'verified'
                       ? 'border-sky-900/40 bg-sky-950/20'
+                      : selectedHero.verification?.verificationStatus === 'partial'
+                      ? 'border-amber-900/40 bg-amber-950/15'
                       : 'border-zinc-800 bg-zinc-950/50'
                   }`}>
                     <div className="flex items-center justify-between">
-                      <div className={`flex items-center gap-1.5 text-xs font-medium ${
-                        isSelectedVerified ? 'text-sky-300' : 'text-zinc-300'
-                      }`}>
-                        {isSelectedVerified ? (
+                      <div className="flex items-center gap-1.5 text-xs font-medium">
+                        {selectedHero.verification?.verificationStatus === 'verified' ? (
                           <CheckCircle2 className="w-4 h-4 text-sky-400" />
+                        ) : selectedHero.verification?.verificationStatus === 'partial' ? (
+                          <Info className="w-4 h-4 text-amber-400" />
                         ) : (
-                          <Info className="w-4 h-4 text-zinc-500" />
+                          <ShieldAlert className="w-4 h-4 text-zinc-500" />
                         )}
-                        <span>
-                          {isSelectedVerified
-                            ? 'Original Server Patch Verification'
-                            : 'Community Reference Status'}
+                        <span className={
+                          selectedHero.verification?.verificationStatus === 'verified'
+                            ? 'text-sky-300'
+                            : selectedHero.verification?.verificationStatus === 'partial'
+                            ? 'text-amber-300'
+                            : 'text-zinc-300'
+                        }>
+                          {selectedHero.verification?.verificationStatus === 'verified'
+                            ? 'Original Server Patch Verification (Complete)'
+                            : selectedHero.verification?.verificationStatus === 'partial'
+                            ? 'Partial Patch Verification (Historical Data Verified)'
+                            : 'Community Reference Baseline (Pending Patch Audit)'}
                         </span>
                       </div>
-                      <span className={`px-1.5 py-0.5 rounded text-[10px] font-mono border ${
-                        isSelectedVerified
+                      <span className={`px-2 py-0.5 rounded text-[10px] font-mono uppercase font-semibold border ${
+                        selectedHero.verification?.verificationStatus === 'verified'
                           ? 'bg-sky-900/60 text-sky-200 border-sky-700/50'
+                          : selectedHero.verification?.verificationStatus === 'partial'
+                          ? 'bg-amber-950/70 text-amber-300 border-amber-800/60'
                           : 'bg-zinc-900 text-zinc-400 border-zinc-800'
                       }`}>
                         {selectedHero.verification?.verificationStatus.toUpperCase() || 'UNVERIFIED'}
                       </span>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-2 text-[11px] font-mono text-zinc-400 pt-1">
+                    {/* Granular Sub-Status Badges */}
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5 text-[10px] font-mono">
+                      <div className="p-1.5 rounded bg-zinc-900/60 border border-zinc-800/80">
+                        <span className="text-zinc-500 block uppercase text-[9px]">Skills:</span>
+                        <span className={selectedHero.verification?.skillsVerificationStatus === 'verified' ? 'text-emerald-400' : 'text-zinc-400'}>
+                          {selectedHero.verification?.skillsVerificationStatus === 'verified' ? 'Verified' : 'Ref Baseline'}
+                        </span>
+                      </div>
+                      <div className="p-1.5 rounded bg-zinc-900/60 border border-zinc-800/80">
+                        <span className="text-zinc-500 block uppercase text-[9px]">Mechanics:</span>
+                        <span className={selectedHero.verification?.mechanicsVerificationStatus === 'verified' ? 'text-emerald-400' : 'text-zinc-400'}>
+                          {selectedHero.verification?.mechanicsVerificationStatus === 'verified' ? 'Verified' : 'Ref Baseline'}
+                        </span>
+                      </div>
+                      <div className="p-1.5 rounded bg-zinc-900/60 border border-zinc-800/80">
+                        <span className="text-zinc-500 block uppercase text-[9px]">Patch History:</span>
+                        <span className={selectedHero.verification?.patchHistoryVerificationStatus === 'verified' ? 'text-emerald-400' : 'text-zinc-400'}>
+                          {selectedHero.verification?.patchHistoryVerificationStatus === 'verified' ? `${patchCounts.all} Verified` : 'No Records'}
+                        </span>
+                      </div>
+                      <div className="p-1.5 rounded bg-zinc-900/60 border border-zinc-800/80">
+                        <span className="text-zinc-500 block uppercase text-[9px]">Patch 2.2.16a:</span>
+                        <span className={selectedHero.verification?.currentPatchVerificationStatus === 'verified' ? 'text-sky-400' : 'text-zinc-500'}>
+                          {selectedHero.verification?.currentPatchVerificationStatus === 'verified' ? 'Audited' : 'Pending'}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-2 text-[11px] font-mono text-zinc-400 pt-1 border-t border-zinc-850">
                       <div>
                         <span className="text-[10px] text-zinc-500 uppercase block">Active Patch:</span>
                         <span className="text-zinc-200">{selectedHero.verification?.currentPatch || CURRENT_ORIGINAL_SERVER_PATCH}</span>
                       </div>
                       <div>
-                        <span className="text-[10px] text-zinc-500 uppercase block">Verified Date:</span>
+                        <span className="text-[10px] text-zinc-500 uppercase block">Last Verified Date:</span>
                         <span className="text-zinc-200">{selectedHero.verification?.lastVerifiedDate || CURRENT_PATCH_DATE}</span>
                       </div>
                       <div className="col-span-2">
-                        <span className="text-[10px] text-zinc-500 uppercase block">Primary Source:</span>
+                        <span className="text-[10px] text-zinc-500 uppercase block">Primary Attribution:</span>
                         <div className="flex items-center justify-between">
                           <span className="text-zinc-300 truncate">{selectedHero.verification?.source}</span>
                           {selectedHero.verification?.sourceUrl && (
@@ -797,6 +835,26 @@ export const HeroDatabase: React.FC = () => {
                       )}
                     </div>
                   </div>
+
+                  {/* Latest Documented Balance Change Highlight */}
+                  {latestHeroPatch && (
+                    <div className="p-2.5 rounded-lg border border-sky-900/30 bg-sky-950/15 space-y-1">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-1.5">
+                          <span className="px-1.5 py-0.2 rounded text-[9px] font-mono font-semibold uppercase bg-sky-900/60 text-sky-300 border border-sky-700/50">
+                            Latest Balance Change
+                          </span>
+                          <span className="text-xs font-semibold text-zinc-100">{latestHeroPatch.title}</span>
+                        </div>
+                        <span className="text-[10px] font-mono text-zinc-400">
+                          {latestHeroPatch.patchVersion} ({latestHeroPatch.date})
+                        </span>
+                      </div>
+                      <p className="text-[11px] text-zinc-300 leading-snug">
+                        {latestHeroPatch.summary}
+                      </p>
+                    </div>
+                  )}
 
                   {/* Category Filter Toolbar */}
                   <div className="space-y-2">
@@ -869,6 +927,18 @@ export const HeroDatabase: React.FC = () => {
                             Revamps ({patchCounts.revamp})
                           </button>
                         )}
+                        {patchCounts.rework > 0 && (
+                          <button
+                            onClick={() => setPatchFilter('rework')}
+                            className={`px-2 py-0.5 rounded transition-colors cursor-pointer ${
+                              patchFilter === 'rework'
+                                ? 'bg-indigo-950 text-indigo-300 border border-indigo-800 font-medium'
+                                : 'text-zinc-400 hover:text-indigo-400'
+                            }`}
+                          >
+                            Reworks ({patchCounts.rework})
+                          </button>
+                        )}
                       </div>
                     )}
 
@@ -881,8 +951,10 @@ export const HeroDatabase: React.FC = () => {
                               ? 'bg-emerald-950/70 text-emerald-300 border-emerald-800/60'
                               : change.type === 'nerf'
                               ? 'bg-rose-950/70 text-rose-300 border-rose-800/60'
-                              : change.type === 'revamp' || change.type === 'rework'
+                              : change.type === 'revamp'
                               ? 'bg-purple-950/70 text-purple-300 border-purple-800/60'
+                              : change.type === 'rework'
+                              ? 'bg-indigo-950/70 text-indigo-300 border-indigo-800/60'
                               : 'bg-amber-950/70 text-amber-300 border-amber-800/60';
 
                           return (
@@ -950,7 +1022,14 @@ export const HeroDatabase: React.FC = () => {
 
                               {change.sourceUrl && (
                                 <div className="pt-1.5 border-t border-zinc-900 flex items-center justify-between text-[10px]">
-                                  <div className="flex items-center gap-1.5">
+                                  <div className="flex items-center gap-1.5 flex-wrap">
+                                    <span className={`px-1.5 py-0.2 rounded text-[8px] font-mono uppercase font-semibold border ${
+                                      change.verificationStatus === 'verified'
+                                        ? 'bg-emerald-950/80 text-emerald-300 border-emerald-800/60'
+                                        : 'bg-zinc-900 text-zinc-400 border-zinc-800'
+                                    }`}>
+                                      {change.verificationStatus === 'verified' ? 'Verified' : 'Unverified'}
+                                    </span>
                                     <span className={`px-1.5 py-0.2 rounded text-[8px] font-mono uppercase border ${
                                       change.sourceType === 'official'
                                         ? 'bg-sky-950 text-sky-300 border-sky-800'
