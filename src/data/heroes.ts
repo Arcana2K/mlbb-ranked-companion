@@ -1,4 +1,9 @@
-import { Hero } from '../types/mlbb';
+import {
+  Hero,
+  HeroVerificationTier,
+  CurrentPatchVerificationStatus,
+  PatchHistorySourceTier
+} from '../types/mlbb';
 import { validateHeroCatalog } from './heroValidator';
 import { getHeroSkillRecord } from './heroSkills';
 import {
@@ -2404,60 +2409,137 @@ export const HEROES: Hero[] = RAW_HEROES.map((h) => {
     resourceType: skillRecord.resourceType
   } : undefined;
 
-  // Granular verification states per Requirement 5:
-  // A hero can have verified historical changes while current skill information remains unverified or reference baseline.
+  // Category 1: Skills Verification
+  // Skills reflect in-game community reference baseline unless supported by verified official skill kit documentation
+  const skillsVerificationStatus = 'community_reference' as 'verified' | 'unverified' | 'community_reference';
+
+  // Category 2: Gameplay Mechanics Verification
+  // Mechanics reflect in-game community reference baseline unless supported by verified official mechanics specifications
+  const mechanicsVerificationStatus = 'community_reference' as 'verified' | 'unverified' | 'community_reference';
+
+  // Category 3: Historical Patch Records Verification (Evaluated Record-by-Record)
   const hasDocumentedPatch = patchHistory.length > 0;
-  const allPatchesVerified = hasDocumentedPatch && patchHistory.every((p) => p.verificationStatus === 'verified');
+  let officialPatchRecordCount = 0;
+  let secondaryPatchRecordCount = 0;
+  let unverifiedPatchRecordCount = 0;
+
+  for (const patch of patchHistory) {
+    if (patch.verificationStatus === 'verified') {
+      // Must not classify a record as officially verified merely because URL contains mobilelegends.com
+      // Source type must be explicitly 'official' and point to verified patch notes / lore news
+      const isOfficial =
+        patch.sourceType === 'official' &&
+        Boolean(patch.sourceUrl) &&
+        !patch.sourceUrl.includes('liquipedia.net') &&
+        (patch.sourceUrl.includes('mobilelegends.com/news') || patch.sourceUrl.includes('play.mobilelegends.com/lore/news'));
+
+      if (isOfficial) {
+        officialPatchRecordCount++;
+      } else {
+        secondaryPatchRecordCount++;
+      }
+    } else {
+      unverifiedPatchRecordCount++;
+    }
+  }
+
+  const allPatchesVerified = hasDocumentedPatch && unverifiedPatchRecordCount === 0;
+  const anyPatchVerified = officialPatchRecordCount > 0 || secondaryPatchRecordCount > 0;
   const patchHistoryVerificationStatus: 'verified' | 'unverified' | 'partial' = hasDocumentedPatch
-    ? allPatchesVerified ? 'verified' : 'partial'
+    ? allPatchesVerified ? 'verified' : (anyPatchVerified ? 'partial' : 'unverified')
     : 'unverified';
 
-  // Current active patch audit (Patch 2.2.16a)
-  const isAuditedInCurrentPatch = patchHistory.some(
-    (p) => p.patchVersion === CURRENT_ORIGINAL_SERVER_PATCH
+  let patchSourceTier: PatchHistorySourceTier = 'none';
+  if (officialPatchRecordCount > 0 && secondaryPatchRecordCount === 0) {
+    patchSourceTier = 'official';
+  } else if (secondaryPatchRecordCount > 0 && officialPatchRecordCount === 0) {
+    patchSourceTier = 'secondary';
+  } else if (officialPatchRecordCount > 0 && secondaryPatchRecordCount > 0) {
+    patchSourceTier = 'mixed';
+  }
+
+  // Category 4: Current Patch Status (Patch 2.2.16a)
+  // Distinguish verified live changes, confirmed absence of changes (audited), and unreviewed
+  const hasCurrentPatchChange = patchHistory.some(
+    (p) => p.patchVersion === CURRENT_ORIGINAL_SERVER_PATCH && p.verificationStatus === 'verified'
   );
-  const currentPatchVerificationStatus: 'verified' | 'unverified' = isAuditedInCurrentPatch ? 'verified' : 'unverified';
 
-  // Skills and mechanics verification: verified if hero has directly documented skill revamp/rework or active patch tuning
-  const isSkillKitVerified = hasDocumentedPatch && (isAuditedInCurrentPatch || patchHistory.some((p) => p.type === 'revamp' || p.type === 'rework'));
-  const skillsVerificationStatus: 'verified' | 'unverified' | 'community_reference' = isSkillKitVerified
-    ? 'verified'
-    : 'community_reference';
-  const mechanicsVerificationStatus: 'verified' | 'unverified' | 'community_reference' = isSkillKitVerified
-    ? 'verified'
-    : 'community_reference';
+  const isConfirmedUnchangedInCurrentPatch = patchHistory.some(
+    (p) =>
+      p.verificationStatus === 'verified' &&
+      (p.summary.includes('Audited for Patch 2.2.16a') ||
+       p.details.some((d) => d.includes('Audited against Patch 2.2.16a hotfix') && d.includes('no direct live stat adjustments')))
+  );
 
-  // Overall verification status: strict requirement - only 'verified' if all facets are verified
-  const overallVerificationStatus: 'verified' | 'unverified' | 'partial' =
+  const currentPatchVerificationStatus: CurrentPatchVerificationStatus = hasCurrentPatchChange
+    ? 'verified_changed'
+    : isConfirmedUnchangedInCurrentPatch
+    ? 'confirmed_unchanged'
+    : 'unreviewed';
+
+  // Overall Verification Status:
+  // Requires ALL categories (skills, mechanics, patch history, active patch) to be verified to claim 'verified'
+  const isFullyVerified =
     skillsVerificationStatus === 'verified' &&
-    currentPatchVerificationStatus === 'verified' &&
-    patchHistoryVerificationStatus === 'verified'
-      ? 'verified'
-      : patchHistoryVerificationStatus === 'verified' || skillsVerificationStatus === 'verified'
-      ? 'partial'
-      : 'unverified';
+    mechanicsVerificationStatus === 'verified' &&
+    (currentPatchVerificationStatus === 'verified_changed' || currentPatchVerificationStatus === 'confirmed_unchanged') &&
+    (hasDocumentedPatch ? patchHistoryVerificationStatus === 'verified' : true);
 
-  const sourceName = hasDocumentedPatch ? patchHistory[0].sourceName : 'Community Reference Baseline';
-  const sourceUrl = hasDocumentedPatch ? patchHistory[0].sourceUrl : OFFICIAL_PATCH_ARCHIVE_URL;
-  const sourceType = hasDocumentedPatch ? patchHistory[0].sourceType : 'secondary';
+  const isPartiallyVerified =
+    !isFullyVerified &&
+    (anyPatchVerified || currentPatchVerificationStatus === 'verified_changed' || currentPatchVerificationStatus === 'confirmed_unchanged');
+
+  const overallVerificationStatus: 'verified' | 'unverified' | 'partial' = isFullyVerified
+    ? 'verified'
+    : isPartiallyVerified
+    ? 'partial'
+    : 'unverified';
+
+  // Hero Verification Tier:
+  let verificationTier: HeroVerificationTier = 'unverified';
+  if (isFullyVerified) {
+    verificationTier = patchSourceTier === 'official' ? 'official_verified' : 'secondary_verified';
+  } else if (isPartiallyVerified) {
+    verificationTier = 'partially_verified';
+  } else {
+    verificationTier = 'unverified';
+  }
+
+  // Source Attribution:
+  let sourceName = 'Community In-Game Reference Baseline';
+  let sourceUrl = OFFICIAL_PATCH_ARCHIVE_URL;
+  let sourceType: 'official' | 'secondary' = 'secondary';
   const lastVerifiedDate = hasDocumentedPatch ? patchHistory[0].date : CURRENT_PATCH_DATE;
 
-  // Verification tier: distinguish official Moonton source from secondary archive
-  const isOfficialSource = sourceType === 'official' || (sourceUrl && sourceUrl.includes('mobilelegends.com'));
-  const verificationTier: 'official_verified' | 'secondary_verified' | 'unverified' =
-    overallVerificationStatus === 'verified' && isOfficialSource
-      ? 'official_verified'
-      : (overallVerificationStatus === 'verified' || overallVerificationStatus === 'partial') && hasDocumentedPatch
-      ? 'secondary_verified'
-      : 'unverified';
+  if (patchSourceTier === 'mixed') {
+    sourceName = 'Mixed Sources (Official Moonton & Secondary Archives)';
+    sourceUrl = 'https://www.mobilelegends.com/news';
+    sourceType = 'official';
+  } else if (patchSourceTier === 'official') {
+    const offPatch = patchHistory.find((p) => p.sourceType === 'official');
+    sourceName = offPatch?.sourceName || 'Moonton Official Patch Notes';
+    sourceUrl = offPatch?.sourceUrl || 'https://www.mobilelegends.com/news';
+    sourceType = 'official';
+  } else if (patchSourceTier === 'secondary') {
+    sourceName = patchHistory[0]?.sourceName || 'Liquipedia MLBB Patch Archive';
+    sourceUrl = patchHistory[0]?.sourceUrl || OFFICIAL_PATCH_ARCHIVE_URL;
+    sourceType = 'secondary';
+  } else if (currentPatchVerificationStatus === 'confirmed_unchanged') {
+    sourceName = 'Moonton Patch 2.2.16a Audit / Secondary Archive';
+    sourceUrl = patchHistory[0]?.sourceUrl || OFFICIAL_PATCH_ARCHIVE_URL;
+    sourceType = 'secondary';
+  }
 
+  // Detailed Evidence Notes:
   let evidenceNotes = '';
-  if (overallVerificationStatus === 'verified') {
-    evidenceNotes = `Audited & verified against ${CURRENT_ORIGINAL_SERVER_PATCH}. Skills, mechanics, and live balance changes verified.`;
+  if (currentPatchVerificationStatus === 'verified_changed') {
+    evidenceNotes = `Active Patch 2.2.16a balance tuning verified (${patchSourceTier} archive). Ability kit descriptions remain in-game reference baseline pending official kit documentation.`;
+  } else if (currentPatchVerificationStatus === 'confirmed_unchanged') {
+    evidenceNotes = `Audited against Patch 2.2.16a hotfix: confirmed absence of direct live stat adjustments. Historical Patch 2.2.16 records verified. Ability kit is in-game baseline.`;
   } else if (patchHistoryVerificationStatus === 'verified') {
-    evidenceNotes = `Historical patch records verified against ${patchHistory[0].patchVersion} (${patchHistory[0].type.toUpperCase()}). Current kit baseline maintained.`;
+    evidenceNotes = `Historical patch records verified (${patchHistory.length} record(s), ${patchSourceTier} source). Current Patch 2.2.16a status unreviewed; core kit remains reference baseline.`;
   } else {
-    evidenceNotes = 'Core mechanics and attributes reflect in-game baseline. Specific patch change logs pending verification.';
+    evidenceNotes = 'Core mechanics and ability descriptions reflect in-game baseline. No documented patch records verified.';
   }
 
   return {
@@ -2479,7 +2561,11 @@ export const HEROES: Hero[] = RAW_HEROES.map((h) => {
       skillsVerificationStatus,
       mechanicsVerificationStatus,
       patchHistoryVerificationStatus,
-      currentPatchVerificationStatus
+      currentPatchVerificationStatus,
+      patchSourceTier,
+      officialPatchRecordCount,
+      secondaryPatchRecordCount,
+      unverifiedPatchRecordCount
     }
   };
 });

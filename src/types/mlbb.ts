@@ -77,6 +77,23 @@ export interface PatchConfig {
   environment: 'Original Server';
 }
 
+export type HeroVerificationTier =
+  | 'official_verified'
+  | 'secondary_verified'
+  | 'partially_verified'
+  | 'unverified';
+
+export type CurrentPatchVerificationStatus =
+  | 'verified_changed'
+  | 'confirmed_unchanged'
+  | 'unreviewed';
+
+export type PatchHistorySourceTier =
+  | 'official'
+  | 'secondary'
+  | 'mixed'
+  | 'none';
+
 export interface HeroVerificationMetadata {
   currentPatch: string;
   lastVerifiedDate: string;
@@ -85,7 +102,7 @@ export interface HeroVerificationMetadata {
   sourceUrl: string;
   sourceType?: SourceType;
   verificationStatus: 'verified' | 'unverified' | 'partial';
-  verificationTier?: 'official_verified' | 'secondary_verified' | 'unverified';
+  verificationTier?: HeroVerificationTier;
   evidenceNotes?: string;
   verificationNotes?: string;
 
@@ -93,7 +110,13 @@ export interface HeroVerificationMetadata {
   skillsVerificationStatus: 'verified' | 'unverified' | 'community_reference';
   mechanicsVerificationStatus: 'verified' | 'unverified' | 'community_reference';
   patchHistoryVerificationStatus: 'verified' | 'unverified' | 'partial';
-  currentPatchVerificationStatus: 'verified' | 'unverified';
+  currentPatchVerificationStatus: CurrentPatchVerificationStatus;
+
+  // Category evidence audit metrics
+  patchSourceTier?: PatchHistorySourceTier;
+  officialPatchRecordCount?: number;
+  secondaryPatchRecordCount?: number;
+  unverifiedPatchRecordCount?: number;
 }
 
 export interface HeroGameplayMechanics {

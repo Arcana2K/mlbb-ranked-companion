@@ -134,7 +134,7 @@ export function validateHeroCatalog(heroes: Hero[]): HeroCatalogValidationReport
       if (!['verified', 'unverified', 'partial'].includes(v.patchHistoryVerificationStatus)) {
         errors.push(`Hero ${h.id} has invalid patchHistoryVerificationStatus: "${v.patchHistoryVerificationStatus}"`);
       }
-      if (!['verified', 'unverified'].includes(v.currentPatchVerificationStatus)) {
+      if (!['verified_changed', 'confirmed_unchanged', 'unreviewed', 'verified', 'unverified'].includes(v.currentPatchVerificationStatus)) {
         errors.push(`Hero ${h.id} has invalid currentPatchVerificationStatus: "${v.currentPatchVerificationStatus}"`);
       }
 
@@ -143,11 +143,46 @@ export function validateHeroCatalog(heroes: Hero[]): HeroCatalogValidationReport
         if (v.skillsVerificationStatus !== 'verified') {
           errors.push(`Hero ${h.id} marked as fully verified but skillsVerificationStatus is "${v.skillsVerificationStatus}"`);
         }
-        if (v.currentPatchVerificationStatus !== 'verified') {
+        if (!['verified', 'verified_changed', 'confirmed_unchanged'].includes(v.currentPatchVerificationStatus)) {
           errors.push(`Hero ${h.id} marked as fully verified but currentPatchVerificationStatus is "${v.currentPatchVerificationStatus}"`);
         }
         if (!v.sourceUrl || v.sourceUrl.trim() === '') {
           errors.push(`Hero ${h.id} marked as verified but missing source URL`);
+        }
+      }
+
+      // Verification tier consistency checks
+      if (v.verificationTier) {
+        if (!['official_verified', 'secondary_verified', 'partially_verified', 'unverified'].includes(v.verificationTier)) {
+          errors.push(`Hero ${h.id} has invalid verificationTier: "${v.verificationTier}"`);
+        }
+
+        if (v.verificationTier === 'official_verified') {
+          if (v.verificationStatus !== 'verified' || v.sourceType !== 'official') {
+            errors.push(`Hero ${h.id} marked as official_verified without full official verification evidence`);
+          }
+          if (v.skillsVerificationStatus === 'community_reference') {
+            errors.push(`Hero ${h.id} marked as official_verified but skills are community_reference`);
+          }
+        }
+
+        if (v.verificationTier === 'secondary_verified') {
+          if (v.verificationStatus !== 'verified') {
+            errors.push(`Hero ${h.id} marked as secondary_verified without full verification evidence`);
+          }
+          if (v.skillsVerificationStatus === 'community_reference') {
+            errors.push(`Hero ${h.id} marked as secondary_verified but skills are community_reference`);
+          }
+        }
+
+        if (v.verificationTier === 'partially_verified') {
+          const hasPartialEvidence =
+            v.patchHistoryVerificationStatus === 'verified' ||
+            v.currentPatchVerificationStatus === 'verified_changed' ||
+            v.currentPatchVerificationStatus === 'confirmed_unchanged';
+          if (!hasPartialEvidence) {
+            warnings.push(`Hero ${h.id} marked as partially_verified without verified patch or active patch evidence`);
+          }
         }
       }
 
