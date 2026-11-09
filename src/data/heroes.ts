@@ -6,7 +6,7 @@ import {
   CURRENT_ORIGINAL_SERVER_PATCH,
   CURRENT_PATCH_DATE,
   OFFICIAL_PATCH_SOURCE,
-  OFFICIAL_PATCH_SOURCE_URL
+  OFFICIAL_PATCH_ARCHIVE_URL
 } from './heroPatchHistory';
 
 /**
@@ -2404,6 +2404,10 @@ export const HEROES: Hero[] = RAW_HEROES.map((h) => {
     resourceType: skillRecord.resourceType
   } : undefined;
 
+  // Verification status: only mark verified if backed by specific documented patch history / primary sources
+  const hasDocumentedPatch = patchHistory.length > 0;
+  const isVerified = hasDocumentedPatch;
+
   return {
     ...h,
     skills: skillRecord?.skills,
@@ -2411,10 +2415,17 @@ export const HEROES: Hero[] = RAW_HEROES.map((h) => {
     patchHistory,
     verification: {
       currentPatch: CURRENT_ORIGINAL_SERVER_PATCH,
-      lastVerifiedDate: CURRENT_PATCH_DATE,
-      source: OFFICIAL_PATCH_SOURCE,
-      sourceUrl: OFFICIAL_PATCH_SOURCE_URL,
-      verificationStatus: 'verified'
+      lastVerifiedDate: hasDocumentedPatch ? patchHistory[0].date : CURRENT_PATCH_DATE,
+      source: hasDocumentedPatch
+        ? (patchHistory[0].sourceName || OFFICIAL_PATCH_SOURCE)
+        : 'Community Reference Baseline',
+      sourceUrl: hasDocumentedPatch
+        ? (patchHistory[0].sourceUrl || OFFICIAL_PATCH_ARCHIVE_URL)
+        : 'https://liquipedia.net/mobilelegends/Hero',
+      verificationStatus: isVerified ? 'verified' : 'unverified',
+      evidenceNotes: isVerified
+        ? `Verified against ${patchHistory[0].patchVersion} official patch documentation.`
+        : 'Core mechanics and attributes reflect in-game baseline. Specific patch change logs pending verification.'
     }
   };
 });

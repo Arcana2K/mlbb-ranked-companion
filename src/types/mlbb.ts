@@ -51,6 +51,8 @@ export interface HeroPatchChange {
   title: string;
   summary: string;
   details: string[];
+  sourceUrl?: string;
+  sourceName?: string;
 }
 
 export interface HeroVerificationMetadata {
@@ -59,6 +61,7 @@ export interface HeroVerificationMetadata {
   source: string;
   sourceUrl: string;
   verificationStatus: 'verified' | 'unverified';
+  evidenceNotes?: string;
 }
 
 export interface HeroGameplayMechanics {

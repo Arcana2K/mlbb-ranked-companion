@@ -5,7 +5,7 @@ import {
   CURRENT_ORIGINAL_SERVER_PATCH,
   CURRENT_PATCH_DATE,
   OFFICIAL_PATCH_SOURCE,
-  OFFICIAL_PATCH_SOURCE_URL,
+  OFFICIAL_PATCH_ARCHIVE_URL,
 } from '../data/heroPatchHistory';
 import { RoleBadge } from '../components/common/RoleBadge';
 import { HeroAvatar } from '../components/common/HeroAvatar';
@@ -18,8 +18,6 @@ import {
   ExternalLink,
   Zap,
   Clock,
-  Layers,
-  Sparkles,
   Info,
 } from 'lucide-react';
 
@@ -73,6 +71,8 @@ export const HeroDatabase: React.FC = () => {
     }
   };
 
+  const isSelectedVerified = selectedHero?.verification?.verificationStatus === 'verified';
+
   return (
     <div className="space-y-5">
       {/* Official Patch Banner */}
@@ -82,22 +82,22 @@ export const HeroDatabase: React.FC = () => {
             <CheckCircle2 className="w-3 h-3 text-sky-400" />
             {CURRENT_ORIGINAL_SERVER_PATCH}
           </span>
-          <span className="text-zinc-300 font-medium">Official Original Server Baseline</span>
+          <span className="text-zinc-300 font-medium">Original Server Roster</span>
           <span className="text-zinc-500 hidden md:inline">|</span>
           <span className="text-zinc-400 font-mono text-[11px] hidden md:inline">
-            Verified {CURRENT_PATCH_DATE}
+            133 Heroes Cataloged
           </span>
         </div>
 
         <div className="flex items-center gap-3">
-          <span className="text-zinc-500 text-[11px]">Source: {OFFICIAL_PATCH_SOURCE}</span>
+          <span className="text-zinc-500 text-[11px]">Archive: {OFFICIAL_PATCH_SOURCE}</span>
           <a
-            href={OFFICIAL_PATCH_SOURCE_URL}
+            href={OFFICIAL_PATCH_ARCHIVE_URL}
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center gap-1 text-[11px] text-sky-400 hover:text-sky-300 transition-colors"
           >
-            <span>moonton.com</span>
+            <span>liquipedia.net</span>
             <ExternalLink className="w-3 h-3" />
           </a>
         </div>
@@ -105,7 +105,7 @@ export const HeroDatabase: React.FC = () => {
 
       <DataDisclaimer
         type="notice"
-        text="Verified mechanical attributes, complete skill kits, and official patch notes for all 133 Mobile Legends: Bang Bang heroes. Unverified ranked win/ban rates are omitted to preserve analytical integrity."
+        text="Mobile Legends: Bang Bang catalog of 133 heroes. Entries with documented patch notes are verified against primary sources; other entries reflect the current in-game baseline. Unverified matchmaking statistics and win rates are omitted to preserve analytical integrity."
       />
 
       {/* Filter and Search Bar */}
@@ -175,6 +175,7 @@ export const HeroDatabase: React.FC = () => {
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2.5 max-h-[760px] overflow-y-auto p-0.5">
               {filteredHeroes.map((hero) => {
                 const isSelected = selectedHero?.id === hero.id;
+                const isVerified = hero.verification?.verificationStatus === 'verified';
 
                 return (
                   <div
@@ -194,8 +195,15 @@ export const HeroDatabase: React.FC = () => {
                       <div className="absolute top-1 right-1 px-1 py-0.2 rounded bg-black/75 text-[9px] font-mono text-zinc-300">
                         {hero.difficulty}
                       </div>
+
+                      {isVerified && (
+                        <div className="absolute top-1 left-1 px-1 py-0.2 rounded bg-sky-950/90 text-[8px] font-mono text-sky-300 border border-sky-800/60">
+                          VERIFIED
+                        </div>
+                      )}
+
                       {hero.patchHistory && hero.patchHistory.length > 0 && (
-                        <div className="absolute bottom-1 left-1 px-1 py-0.2 rounded bg-sky-950/90 text-[8px] font-mono text-sky-300 border border-sky-800/60">
+                        <div className="absolute bottom-1 left-1 px-1 py-0.2 rounded bg-zinc-950/90 text-[8px] font-mono text-zinc-300 border border-zinc-800">
                           {hero.patchHistory[0].type.toUpperCase()}
                         </div>
                       )}
@@ -299,6 +307,33 @@ export const HeroDatabase: React.FC = () => {
               {/* TAB 1: OVERVIEW */}
               {activeTab === 'overview' && (
                 <div className="space-y-4">
+                  {/* Verification Status Card */}
+                  {isSelectedVerified ? (
+                    <div className="flex items-center justify-between p-2.5 rounded bg-sky-950/30 border border-sky-900/40 text-xs">
+                      <div className="flex items-center gap-1.5 text-sky-300 font-medium">
+                        <CheckCircle2 className="w-4 h-4 text-sky-400 shrink-0" />
+                        <span>Verified Patch Documentation</span>
+                      </div>
+                      <a
+                        href={selectedHero.verification?.sourceUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1 text-[11px] text-sky-400 hover:text-sky-300 font-mono transition-colors"
+                      >
+                        <span>{selectedHero.verification?.source}</span>
+                        <ExternalLink className="w-3 h-3" />
+                      </a>
+                    </div>
+                  ) : (
+                    <div className="flex items-center justify-between p-2.5 rounded bg-zinc-950 border border-zinc-800 text-xs">
+                      <div className="flex items-center gap-1.5 text-zinc-400">
+                        <Info className="w-3.5 h-3.5 text-zinc-500 shrink-0" />
+                        <span>Community Reference Baseline</span>
+                      </div>
+                      <span className="text-[10px] text-zinc-500 font-mono">Pending Patch Record</span>
+                    </div>
+                  )}
+
                   {/* Description */}
                   <p className="text-xs text-zinc-400 leading-relaxed bg-zinc-950 p-3 rounded border border-zinc-800">
                     {selectedHero.description}
@@ -526,7 +561,18 @@ export const HeroDatabase: React.FC = () => {
               {activeTab === 'skills' && (
                 <div className="space-y-3">
                   <div className="flex items-center justify-between text-xs text-zinc-400 border-b border-zinc-800 pb-2">
-                    <span className="font-medium text-zinc-200">Verified Ability Kit</span>
+                    <div className="flex items-center gap-2">
+                      <span className="font-medium text-zinc-200">
+                        {isSelectedVerified ? 'Verified Ability Kit' : 'Ability Kit (Reference Baseline)'}
+                      </span>
+                      <span className={`px-1.5 py-0.2 rounded text-[9px] font-mono border ${
+                        isSelectedVerified
+                          ? 'bg-sky-950/70 text-sky-300 border-sky-800/60'
+                          : 'bg-zinc-950 text-zinc-400 border-zinc-800'
+                      }`}>
+                        {isSelectedVerified ? 'Verified' : 'Unverified'}
+                      </span>
+                    </div>
                     <span className="font-mono text-[10px] text-zinc-500">
                       {selectedHero.skills?.length || 0} Abilities
                     </span>
@@ -641,14 +687,32 @@ export const HeroDatabase: React.FC = () => {
               {activeTab === 'patch' && (
                 <div className="space-y-3.5">
                   {/* Verification Card */}
-                  <div className="p-3 rounded-lg border border-sky-900/40 bg-sky-950/20 space-y-2">
+                  <div className={`p-3 rounded-lg border space-y-2 ${
+                    isSelectedVerified
+                      ? 'border-sky-900/40 bg-sky-950/20'
+                      : 'border-zinc-800 bg-zinc-950/50'
+                  }`}>
                     <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-1.5 text-xs text-sky-300 font-medium">
-                        <CheckCircle2 className="w-4 h-4 text-sky-400" />
-                        <span>Original Server Verification</span>
+                      <div className={`flex items-center gap-1.5 text-xs font-medium ${
+                        isSelectedVerified ? 'text-sky-300' : 'text-zinc-300'
+                      }`}>
+                        {isSelectedVerified ? (
+                          <CheckCircle2 className="w-4 h-4 text-sky-400" />
+                        ) : (
+                          <Info className="w-4 h-4 text-zinc-500" />
+                        )}
+                        <span>
+                          {isSelectedVerified
+                            ? 'Original Server Patch Verification'
+                            : 'Community Reference Status'}
+                        </span>
                       </div>
-                      <span className="px-1.5 py-0.5 rounded text-[10px] font-mono bg-sky-900/60 text-sky-200 border border-sky-700/50">
-                        {selectedHero.verification?.verificationStatus.toUpperCase() || 'VERIFIED'}
+                      <span className={`px-1.5 py-0.5 rounded text-[10px] font-mono border ${
+                        isSelectedVerified
+                          ? 'bg-sky-900/60 text-sky-200 border-sky-700/50'
+                          : 'bg-zinc-900 text-zinc-400 border-zinc-800'
+                      }`}>
+                        {selectedHero.verification?.verificationStatus.toUpperCase() || 'UNVERIFIED'}
                       </span>
                     </div>
 
@@ -663,8 +727,26 @@ export const HeroDatabase: React.FC = () => {
                       </div>
                       <div className="col-span-2">
                         <span className="text-[10px] text-zinc-500 uppercase block">Primary Source:</span>
-                        <span className="text-zinc-300">{selectedHero.verification?.source || OFFICIAL_PATCH_SOURCE}</span>
+                        <div className="flex items-center justify-between">
+                          <span className="text-zinc-300 truncate">{selectedHero.verification?.source}</span>
+                          {selectedHero.verification?.sourceUrl && (
+                            <a
+                              href={selectedHero.verification.sourceUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center gap-1 text-[10px] text-sky-400 hover:text-sky-300 shrink-0 ml-2"
+                            >
+                              <span>Inspect Source</span>
+                              <ExternalLink className="w-2.5 h-2.5" />
+                            </a>
+                          )}
+                        </div>
                       </div>
+                      {selectedHero.verification?.evidenceNotes && (
+                        <div className="col-span-2 text-[10px] text-zinc-500 pt-0.5">
+                          {selectedHero.verification.evidenceNotes}
+                        </div>
+                      )}
                     </div>
                   </div>
 
@@ -718,15 +800,30 @@ export const HeroDatabase: React.FC = () => {
                                   ))}
                                 </ul>
                               )}
+
+                              {change.sourceUrl && (
+                                <div className="pt-1.5 border-t border-zinc-900 flex items-center justify-between text-[10px]">
+                                  <span className="text-zinc-500 truncate">{change.sourceName || 'Patch Documentation'}</span>
+                                  <a
+                                    href={change.sourceUrl}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="inline-flex items-center gap-1 text-sky-400 hover:text-sky-300 shrink-0 ml-2"
+                                  >
+                                    <span>View Patch Notes</span>
+                                    <ExternalLink className="w-2.5 h-2.5" />
+                                  </a>
+                                </div>
+                              )}
                             </div>
                           );
                         })}
                       </div>
                     ) : (
                       <div className="p-4 rounded bg-zinc-950 border border-zinc-800 text-center space-y-1">
-                        <p className="text-xs text-zinc-400 font-medium">No recent balance rebalances</p>
+                        <p className="text-xs text-zinc-400 font-medium">No Specific Patch Notes Indexed</p>
                         <p className="text-[10px] text-zinc-500">
-                          {selectedHero.name}’s kit conforms to the active Original Server baseline ({CURRENT_ORIGINAL_SERVER_PATCH}) without targeted adjustments in recent patches.
+                          {selectedHero.name}’s kit conforms to the active Original Server baseline ({CURRENT_ORIGINAL_SERVER_PATCH}). Specific historical patch documentation is pending verification.
                         </p>
                       </div>
                     )}
