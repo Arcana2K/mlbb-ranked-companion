@@ -38,29 +38,28 @@ export function isValidCalendarDate(dateStr: string): boolean {
 
 /**
  * Validates whether a string is a well-formed absolute HTTP/HTTPS URL.
+ * Rejects malformed URLs, relative paths, and non-HTTP/HTTPS schemes.
  */
 export function isValidUrl(urlString: string): boolean {
   if (!urlString || typeof urlString !== 'string' || urlString.trim() === '') return false;
   try {
     const parsed = new URL(urlString);
-    return parsed.protocol === 'http:' || parsed.protocol === 'https:';
+    return (parsed.protocol === 'http:' || parsed.protocol === 'https:') && Boolean(parsed.hostname && parsed.hostname.length > 0);
   } catch {
     return false;
   }
 }
 
 /**
- * Checks if a URL points to a generic domain root rather than specific documentation.
+ * Checks if a URL points to a generic domain root/homepage rather than specific documentation.
+ * Rejects generic homepage paths on any domain (e.g. '', '/', '/index.html', '/index.php').
  */
 export function isGenericHomepageUrl(urlString: string): boolean {
   if (!urlString || typeof urlString !== 'string') return false;
   try {
     const parsed = new URL(urlString);
-    const host = parsed.hostname.toLowerCase();
-    if (host === 'www.mobilelegends.com' || host === 'mobilelegends.com') {
-      return parsed.pathname === '' || parsed.pathname === '/';
-    }
-    return false;
+    const pathname = parsed.pathname.trim().toLowerCase();
+    return pathname === '' || pathname === '/' || pathname === '/index.html' || pathname === '/index.php';
   } catch {
     return false;
   }
@@ -220,53 +219,41 @@ export function validateHeroCatalog(heroes: Hero[]): HeroCatalogValidationReport
             );
           }
 
-          // Requirement 2 & 4: Validate source fields and source type for every attached evidence record
-          if (status === 'verified') {
-            if (!evidence.sourceName || evidence.sourceName.trim() === '') {
-              errors.push(`Hero ${h.id} has incomplete ${categoryName}Evidence: missing sourceName`);
-            }
-            if (!evidence.sourceUrl || evidence.sourceUrl.trim() === '') {
-              errors.push(`Hero ${h.id} has incomplete ${categoryName}Evidence: missing sourceUrl`);
-            }
-            if (!evidence.sourceType) {
-              errors.push(`Hero ${h.id} has incomplete ${categoryName}Evidence: missing sourceType`);
-            }
-            if (!evidence.verifiedDate) {
-              errors.push(`Hero ${h.id} has incomplete ${categoryName}Evidence: missing verifiedDate`);
-            }
-          } else {
-            // For unverified/community-reference evidence, if fields are attached, they must be valid non-empty values
-            if (evidence.sourceName !== undefined && evidence.sourceName.trim() === '') {
-              errors.push(`Hero ${h.id} ${categoryName}Evidence has empty sourceName`);
-            }
-            if (evidence.sourceUrl !== undefined && evidence.sourceUrl.trim() === '') {
-              errors.push(`Hero ${h.id} ${categoryName}Evidence has empty sourceUrl`);
-            }
+          // Requirement 1 & 2: Require non-empty sourceName, sourceUrl, and valid sourceType for every attached evidence record
+          if (!evidence.sourceName || evidence.sourceName.trim() === '') {
+            errors.push(`Hero ${h.id} has incomplete ${categoryName}Evidence: missing sourceName`);
           }
 
-          // Requirement 3: Reject malformed URLs and generic homepage URLs (for every attached evidence record)
-          if (evidence.sourceUrl !== undefined && evidence.sourceUrl.trim() !== '') {
+          if (!evidence.sourceUrl || evidence.sourceUrl.trim() === '') {
+            errors.push(`Hero ${h.id} has incomplete ${categoryName}Evidence: missing sourceUrl`);
+          } else {
+            // Reject malformed URLs, relative paths, and non-HTTP/HTTPS schemes
             if (!isValidUrl(evidence.sourceUrl)) {
               errors.push(`Hero ${h.id} ${categoryName}Evidence has malformed sourceUrl: "${evidence.sourceUrl}"`);
             } else if (isGenericHomepageUrl(evidence.sourceUrl)) {
               errors.push(`Hero ${h.id} ${categoryName}Evidence uses generic homepage as sourceUrl instead of specific documentation`);
-            }
-
-            // Reject incorrect official/secondary source labels
-            if (evidence.sourceUrl.includes('liquipedia.net') && evidence.sourceType === 'official') {
+            } else if (evidence.sourceUrl.includes('liquipedia.net') && evidence.sourceType === 'official') {
               errors.push(`Hero ${h.id} ${categoryName}Evidence mislabels Liquipedia secondary source as official`);
             }
           }
 
           // Validate sourceType for every attached evidence record
-          if (evidence.sourceType !== undefined && !['official', 'secondary'].includes(evidence.sourceType)) {
+          if (!evidence.sourceType || !['official', 'secondary'].includes(evidence.sourceType)) {
             errors.push(
               `Hero ${h.id} ${categoryName}Evidence has invalid sourceType: "${evidence.sourceType}" (expected "official" or "secondary")`
             );
           }
 
-          // Validate verifiedDate calendar validity whenever present
-          if (evidence.verifiedDate !== undefined) {
+          // Requirement 2: Require a valid calendar verifiedDate only when the category is marked verified
+          if (status === 'verified') {
+            if (!evidence.verifiedDate) {
+              errors.push(`Hero ${h.id} has incomplete ${categoryName}Evidence: missing verifiedDate`);
+            } else if (!isValidCalendarDate(evidence.verifiedDate)) {
+              errors.push(
+                `Hero ${h.id} ${categoryName}Evidence has invalid calendar verifiedDate: "${evidence.verifiedDate}" (expected valid YYYY-MM-DD)`
+              );
+            }
+          } else if (evidence.verifiedDate !== undefined) {
             if (!isValidCalendarDate(evidence.verifiedDate)) {
               errors.push(
                 `Hero ${h.id} ${categoryName}Evidence has invalid calendar verifiedDate: "${evidence.verifiedDate}" (expected valid YYYY-MM-DD)`
@@ -340,16 +327,12 @@ export function validateHeroCatalog(heroes: Hero[]): HeroCatalogValidationReport
 
         if (!audit.sourceUrl || audit.sourceUrl.trim() === '') {
           errors.push(`Hero ${h.id} currentPatchAudit missing specific sourceUrl`);
-        } else {
-          if (
-            audit.sourceUrl === 'https://www.mobilelegends.com' ||
-            audit.sourceUrl === 'https://www.mobilelegends.com/'
-          ) {
-            errors.push(`Hero ${h.id} currentPatchAudit uses generic homepage as source URL instead of specific patch notes source`);
-          }
-          if (audit.sourceUrl.includes('liquipedia.net') && audit.sourceType === 'official') {
-            errors.push(`Hero ${h.id} currentPatchAudit mislabels Liquipedia secondary source as official`);
-          }
+        } else if (!isValidUrl(audit.sourceUrl)) {
+          errors.push(`Hero ${h.id} currentPatchAudit has malformed or non-HTTP/HTTPS sourceUrl: "${audit.sourceUrl}"`);
+        } else if (isGenericHomepageUrl(audit.sourceUrl)) {
+          errors.push(`Hero ${h.id} currentPatchAudit uses generic homepage as source URL instead of specific patch notes source: "${audit.sourceUrl}"`);
+        } else if (audit.sourceUrl.includes('liquipedia.net') && audit.sourceType === 'official') {
+          errors.push(`Hero ${h.id} currentPatchAudit mislabels Liquipedia secondary source as official`);
         }
 
         if (!['official', 'secondary'].includes(audit.sourceType)) {
@@ -382,16 +365,12 @@ export function validateHeroCatalog(heroes: Hero[]): HeroCatalogValidationReport
 
           if (!srcUrl || srcUrl.trim() === '') {
             errors.push(`Hero ${h.id} source record "${srcName || idx}" missing source URL`);
-          } else {
-            if (
-              srcUrl === 'https://www.mobilelegends.com' ||
-              srcUrl === 'https://www.mobilelegends.com/'
-            ) {
-              errors.push(`Hero ${h.id} source record "${srcName || idx}" uses generic homepage instead of specific patch source`);
-            }
-            if (srcUrl.includes('liquipedia.net') && src.sourceType === 'official') {
-              errors.push(`Hero ${h.id} source record "${srcName || idx}" mislabels Liquipedia secondary source as official`);
-            }
+          } else if (!isValidUrl(srcUrl)) {
+            errors.push(`Hero ${h.id} source record "${srcName || idx}" has malformed or non-HTTP/HTTPS sourceUrl: "${srcUrl}"`);
+          } else if (isGenericHomepageUrl(srcUrl)) {
+            errors.push(`Hero ${h.id} source record "${srcName || idx}" uses generic homepage instead of specific patch source: "${srcUrl}"`);
+          } else if (srcUrl.includes('liquipedia.net') && src.sourceType === 'official') {
+            errors.push(`Hero ${h.id} source record "${srcName || idx}" mislabels Liquipedia secondary source as official`);
           }
 
           if (!['official', 'secondary'].includes(src.sourceType)) {
@@ -505,15 +484,12 @@ export function validateHeroCatalog(heroes: Hero[]): HeroCatalogValidationReport
 
       // Source URL validation
       if (v.sourceUrl) {
-        if (
-          v.sourceUrl === 'https://www.mobilelegends.com' ||
-          v.sourceUrl === 'https://www.mobilelegends.com/'
-        ) {
+        if (!isValidUrl(v.sourceUrl)) {
+          errors.push(`Hero ${h.id} has malformed or non-HTTP/HTTPS sourceUrl: "${v.sourceUrl}"`);
+        } else if (isGenericHomepageUrl(v.sourceUrl)) {
           errors.push(`Hero ${h.id} uses generic homepage as verification evidence instead of specific patch notes.`);
-        }
-
-        // Check source labeling honesty: secondary source must not be labeled as official
-        if (v.sourceUrl.includes('liquipedia.net') && v.sourceType === 'official') {
+        } else if (v.sourceUrl.includes('liquipedia.net') && v.sourceType === 'official') {
+          // Check source labeling honesty: secondary source must not be labeled as official
           errors.push(`Hero ${h.id} incorrectly labels Liquipedia secondary source as official Moonton source`);
         }
       }
@@ -599,15 +575,12 @@ export function validateHeroCatalog(heroes: Hero[]): HeroCatalogValidationReport
         // Audit Source Credibility
         if (!patch.sourceUrl || patch.sourceUrl.trim() === '') {
           errors.push(`Hero ${h.id} has patch change "${patch.title}" missing specific sourceUrl`);
-        } else if (
-          patch.sourceUrl === 'https://www.mobilelegends.com' ||
-          patch.sourceUrl === 'https://www.mobilelegends.com/'
-        ) {
+        } else if (!isValidUrl(patch.sourceUrl)) {
+          errors.push(`Hero ${h.id} patch change "${patch.title}" has malformed or non-HTTP/HTTPS sourceUrl: "${patch.sourceUrl}"`);
+        } else if (isGenericHomepageUrl(patch.sourceUrl)) {
           errors.push(`Hero ${h.id} patch change uses generic homepage instead of specific patch notes source`);
-        }
-
-        // Audit Source Type Labeling
-        if (patch.sourceUrl.includes('liquipedia.net') && patch.sourceType === 'official') {
+        } else if (patch.sourceUrl.includes('liquipedia.net') && patch.sourceType === 'official') {
+          // Audit Source Type Labeling
           errors.push(`Hero ${h.id} patch change "${patch.title}" mislabels Liquipedia secondary source as official`);
         }
       }
