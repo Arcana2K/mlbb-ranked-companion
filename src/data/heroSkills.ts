@@ -6462,7 +6462,7 @@ export const HERO_SKILLS_DATA: Record<string, HeroSkillRecord> = {
     ]
   },
   "claude": {
-    "resourceType": "Mana",
+    "resourceType": "Cooldown-Only",
     "crowdControl": [
       "Slow"
     ],
@@ -6495,7 +6495,6 @@ export const HERO_SKILLS_DATA: Record<string, HeroSkillRecord> = {
           "Movement Speed"
         ],
         "cooldown": "5.0s",
-        "energyCost": "65 Mana",
         "description": "Steals attack speed and movement speed from enemies in a fan area, stacking up to 5 times for 6 seconds."
       },
       {
@@ -6507,7 +6506,6 @@ export const HERO_SKILLS_DATA: Record<string, HeroSkillRecord> = {
           "Blink Teleport"
         ],
         "cooldown": "11.0s",
-        "energyCost": "70 Mana",
         "description": "Leaves a mirror image of Dexter at a location; recasting swaps positions with the mirror image instantly."
       },
       {
@@ -6520,7 +6518,6 @@ export const HERO_SKILLS_DATA: Record<string, HeroSkillRecord> = {
           "Multi-Target"
         ],
         "cooldown": "40.0s",
-        "energyCost": "120 Mana",
         "description": "Fires a rapid spinning barrage of bullets at all surrounding enemies for 3 seconds, generating a shield and triggering basic attack effects."
       }
     ]
