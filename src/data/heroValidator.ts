@@ -192,6 +192,34 @@ export function validateHeroCatalog(heroes: Hero[]): HeroCatalogValidationReport
 
       // Source Attribution & Mixed Sources Integrity
       if (v.sources && Array.isArray(v.sources)) {
+        // Validate each individual source record
+        for (const [idx, src] of v.sources.entries()) {
+          const srcName = src.sourceName || src.name;
+          const srcUrl = src.sourceUrl || src.url;
+
+          if (!srcName || srcName.trim() === '') {
+            errors.push(`Hero ${h.id} source record at index ${idx} missing source name`);
+          }
+
+          if (!srcUrl || srcUrl.trim() === '') {
+            errors.push(`Hero ${h.id} source record "${srcName || idx}" missing source URL`);
+          } else {
+            if (
+              srcUrl === 'https://www.mobilelegends.com' ||
+              srcUrl === 'https://www.mobilelegends.com/'
+            ) {
+              errors.push(`Hero ${h.id} source record "${srcName || idx}" uses generic homepage instead of specific patch source`);
+            }
+            if (srcUrl.includes('liquipedia.net') && src.sourceType === 'official') {
+              errors.push(`Hero ${h.id} source record "${srcName || idx}" mislabels Liquipedia secondary source as official`);
+            }
+          }
+
+          if (!['official', 'secondary'].includes(src.sourceType)) {
+            errors.push(`Hero ${h.id} source record "${srcName || idx}" has invalid sourceType: "${src.sourceType}" (expected "official" or "secondary")`);
+          }
+        }
+
         const hasOfficial = v.sources.some((s) => s.sourceType === 'official');
         const hasSecondary = v.sources.some((s) => s.sourceType === 'secondary');
 
@@ -213,6 +241,22 @@ export function validateHeroCatalog(heroes: Hero[]): HeroCatalogValidationReport
         }
       }
 
+      // If hero has sourceType === 'mixed', require individual source records in sources and prohibit official_verified tier
+      if (v.sourceType === 'mixed') {
+        if (!v.sources || !Array.isArray(v.sources) || v.sources.length === 0) {
+          errors.push(`Hero ${h.id} marked with mixed sources but missing individual source records in sources`);
+        } else {
+          const hasOfficial = v.sources.some((s) => s.sourceType === 'official');
+          const hasSecondary = v.sources.some((s) => s.sourceType === 'secondary');
+          if (!hasOfficial || !hasSecondary) {
+            errors.push(`Hero ${h.id} marked with mixed sources but sources array does not contain both official and secondary sources`);
+          }
+        }
+        if (v.verificationTier === 'official_verified') {
+          errors.push(`Hero ${h.id} with mixed source evidence cannot be classified as official_verified`);
+        }
+      }
+
       // Strict enforcement: A hero cannot be fully verified unless skills, mechanics, and current patch are verified
       if (v.verificationStatus === 'verified') {
         if (v.skillsVerificationStatus !== 'verified') {
@@ -221,8 +265,15 @@ export function validateHeroCatalog(heroes: Hero[]): HeroCatalogValidationReport
         if (!['verified', 'verified_changed', 'confirmed_unchanged'].includes(v.currentPatchVerificationStatus)) {
           errors.push(`Hero ${h.id} marked as fully verified but currentPatchVerificationStatus is "${v.currentPatchVerificationStatus}"`);
         }
-        if (!v.sourceUrl || v.sourceUrl.trim() === '') {
-          errors.push(`Hero ${h.id} marked as verified but missing source URL`);
+        // Allow sourceType === 'mixed' without an aggregate sourceUrl; require sourceUrl for non-mixed verified heroes
+        if (v.sourceType === 'mixed') {
+          if (!v.sources || !Array.isArray(v.sources) || v.sources.length === 0) {
+            errors.push(`Hero ${h.id} marked as verified with mixed sources but missing individual source records in sources`);
+          }
+        } else {
+          if (!v.sourceUrl || v.sourceUrl.trim() === '') {
+            errors.push(`Hero ${h.id} marked as verified but missing source URL`);
+          }
         }
       }
 
@@ -233,6 +284,9 @@ export function validateHeroCatalog(heroes: Hero[]): HeroCatalogValidationReport
         }
 
         if (v.verificationTier === 'official_verified') {
+          if (v.sourceType === 'mixed') {
+            errors.push(`Hero ${h.id} with mixed source evidence cannot be classified as official_verified`);
+          }
           if (v.verificationStatus !== 'verified' || v.sourceType !== 'official') {
             errors.push(`Hero ${h.id} marked as official_verified without full official verification evidence`);
           }
