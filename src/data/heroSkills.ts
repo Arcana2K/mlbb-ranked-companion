@@ -1,4 +1,4 @@
-import { HeroSkill, HeroGameplayMechanics } from '../types/mlbb';
+import { HeroSkill, HeroGameplayMechanics, CategoryEvidence } from '../types/mlbb';
 
 export interface HeroSkillRecord {
   skills: HeroSkill[];
@@ -6,6 +6,8 @@ export interface HeroSkillRecord {
   crowdControl: string[];
   mobility: string[];
   damageCharacteristics: string[];
+  skillsEvidence?: CategoryEvidence;
+  mechanicsEvidence?: CategoryEvidence;
 }
 
 export const HERO_SKILLS_DATA: Record<string, HeroSkillRecord> = {

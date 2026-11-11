@@ -2,10 +2,15 @@ import {
   Hero,
   HeroVerificationTier,
   CurrentPatchVerificationStatus,
-  PatchHistorySourceTier
+  PatchHistorySourceTier,
+  SourceType,
+  SourceAttributionDetail,
+  CategoryEvidence,
+  CurrentPatchAuditRecord
 } from '../types/mlbb';
 import { validateHeroCatalog } from './heroValidator';
 import { getHeroSkillRecord } from './heroSkills';
+import { getCurrentPatchAuditRecord } from './currentPatchAudit';
 import {
   getHeroPatchHistory,
   CURRENT_ORIGINAL_SERVER_PATCH,
@@ -2409,13 +2414,44 @@ export const HEROES: Hero[] = RAW_HEROES.map((h) => {
     resourceType: skillRecord.resourceType
   } : undefined;
 
-  // Category 1: Skills Verification
+  // Category 1: Skills Verification (Evidence-Based)
   // Skills reflect in-game community reference baseline unless supported by verified official skill kit documentation
-  const skillsVerificationStatus = 'community_reference' as 'verified' | 'unverified' | 'community_reference';
+  const skillsEvidence: CategoryEvidence | undefined = skillRecord?.skillsEvidence;
+  const isSkillsEvidenceVerified =
+    (skillsEvidence?.verificationStatus === 'verified' || skillsEvidence?.status === 'verified') &&
+    Boolean(skillsEvidence?.sourceUrl) &&
+    Boolean(skillsEvidence?.verifiedDate);
+  const skillsVerificationStatus: 'verified' | 'unverified' | 'community_reference' =
+    isSkillsEvidenceVerified
+      ? 'verified'
+      : (skillsEvidence?.verificationStatus || skillsEvidence?.status || 'community_reference');
 
-  // Category 2: Gameplay Mechanics Verification
+  // Category 2: Gameplay Mechanics Verification (Evidence-Based)
   // Mechanics reflect in-game community reference baseline unless supported by verified official mechanics specifications
-  const mechanicsVerificationStatus = 'community_reference' as 'verified' | 'unverified' | 'community_reference';
+  const mechanicsEvidence: CategoryEvidence | undefined = skillRecord?.mechanicsEvidence;
+  const isMechanicsEvidenceVerified =
+    (mechanicsEvidence?.verificationStatus === 'verified' || mechanicsEvidence?.status === 'verified') &&
+    Boolean(mechanicsEvidence?.sourceUrl) &&
+    Boolean(mechanicsEvidence?.verifiedDate);
+  const mechanicsVerificationStatus: 'verified' | 'unverified' | 'community_reference' =
+    isMechanicsEvidenceVerified
+      ? 'verified'
+      : (mechanicsEvidence?.verificationStatus || mechanicsEvidence?.status || 'community_reference');
+
+  // Category 4: Current Patch Status (Patch 2.2.16a) - Structured Evidence Only
+  const currentPatchAudit: CurrentPatchAuditRecord | undefined = getCurrentPatchAuditRecord(h.id);
+  const hasActivePatchChangeRecord = patchHistory.some(
+    (p) => p.patchVersion === CURRENT_ORIGINAL_SERVER_PATCH && p.verificationStatus === 'verified'
+  );
+
+  let currentPatchVerificationStatus: CurrentPatchVerificationStatus = 'unreviewed';
+  if (currentPatchAudit?.auditResult === 'changed' && hasActivePatchChangeRecord) {
+    currentPatchVerificationStatus = 'verified_changed';
+  } else if (currentPatchAudit?.auditResult === 'confirmed_unchanged') {
+    currentPatchVerificationStatus = 'confirmed_unchanged';
+  } else {
+    currentPatchVerificationStatus = 'unreviewed';
+  }
 
   // Category 3: Historical Patch Records Verification (Evaluated Record-by-Record)
   const hasDocumentedPatch = patchHistory.length > 0;
@@ -2423,10 +2459,12 @@ export const HEROES: Hero[] = RAW_HEROES.map((h) => {
   let secondaryPatchRecordCount = 0;
   let unverifiedPatchRecordCount = 0;
 
+  // Track distinct sources for structured attribution
+  const verifiedSourcesMap = new Map<string, SourceAttributionDetail>();
+  const verifiedDates: string[] = [];
+
   for (const patch of patchHistory) {
     if (patch.verificationStatus === 'verified') {
-      // Must not classify a record as officially verified merely because URL contains mobilelegends.com
-      // Source type must be explicitly 'official' and point to verified patch notes / lore news
       const isOfficial =
         patch.sourceType === 'official' &&
         Boolean(patch.sourceUrl) &&
@@ -2438,15 +2476,89 @@ export const HEROES: Hero[] = RAW_HEROES.map((h) => {
       } else {
         secondaryPatchRecordCount++;
       }
+
+      if (patch.sourceName && patch.sourceUrl) {
+        const key = `${patch.sourceType}::${patch.sourceUrl}`;
+        const existing = verifiedSourcesMap.get(key);
+        if (!existing) {
+          verifiedSourcesMap.set(key, {
+            name: patch.sourceName,
+            sourceName: patch.sourceName,
+            url: patch.sourceUrl,
+            sourceUrl: patch.sourceUrl,
+            sourceType: isOfficial ? 'official' : 'secondary',
+            recordCount: 1
+          });
+        } else {
+          existing.recordCount++;
+        }
+      }
+
+      if (patch.date && /^\d{4}-\d{2}-\d{2}$/.test(patch.date)) {
+        verifiedDates.push(patch.date);
+      }
     } else {
       unverifiedPatchRecordCount++;
     }
   }
 
+  // Include current patch audit source and date if audited
+  if (currentPatchAudit && (currentPatchVerificationStatus === 'verified_changed' || currentPatchVerificationStatus === 'confirmed_unchanged')) {
+    if (currentPatchAudit.sourceName && currentPatchAudit.sourceUrl) {
+      const key = `${currentPatchAudit.sourceType}::${currentPatchAudit.sourceUrl}`;
+      const existing = verifiedSourcesMap.get(key);
+      if (!existing) {
+        verifiedSourcesMap.set(key, {
+          name: currentPatchAudit.sourceName,
+          sourceName: currentPatchAudit.sourceName,
+          url: currentPatchAudit.sourceUrl,
+          sourceUrl: currentPatchAudit.sourceUrl,
+          sourceType: currentPatchAudit.sourceType,
+          recordCount: 1
+        });
+      } else {
+        existing.recordCount++;
+      }
+    }
+    if (currentPatchAudit.auditDate && /^\d{4}-\d{2}-\d{2}$/.test(currentPatchAudit.auditDate)) {
+      verifiedDates.push(currentPatchAudit.auditDate);
+    }
+  }
+
+  // Include skills/mechanics sources if verified
+  if (isSkillsEvidenceVerified && skillsEvidence && skillsEvidence.sourceName && skillsEvidence.sourceUrl && skillsEvidence.verifiedDate) {
+    const key = `${skillsEvidence.sourceType || 'secondary'}::${skillsEvidence.sourceUrl}`;
+    if (!verifiedSourcesMap.has(key)) {
+      verifiedSourcesMap.set(key, {
+        name: skillsEvidence.sourceName,
+        sourceName: skillsEvidence.sourceName,
+        url: skillsEvidence.sourceUrl,
+        sourceUrl: skillsEvidence.sourceUrl,
+        sourceType: (skillsEvidence.sourceType as SourceType) || 'secondary',
+        recordCount: 1
+      });
+    }
+    verifiedDates.push(skillsEvidence.verifiedDate);
+  }
+  if (isMechanicsEvidenceVerified && mechanicsEvidence && mechanicsEvidence.sourceName && mechanicsEvidence.sourceUrl && mechanicsEvidence.verifiedDate) {
+    const key = `${mechanicsEvidence.sourceType || 'secondary'}::${mechanicsEvidence.sourceUrl}`;
+    if (!verifiedSourcesMap.has(key)) {
+      verifiedSourcesMap.set(key, {
+        name: mechanicsEvidence.sourceName,
+        sourceName: mechanicsEvidence.sourceName,
+        url: mechanicsEvidence.sourceUrl,
+        sourceUrl: mechanicsEvidence.sourceUrl,
+        sourceType: (mechanicsEvidence.sourceType as SourceType) || 'secondary',
+        recordCount: 1
+      });
+    }
+    verifiedDates.push(mechanicsEvidence.verifiedDate);
+  }
+
   const allPatchesVerified = hasDocumentedPatch && unverifiedPatchRecordCount === 0;
   const anyPatchVerified = officialPatchRecordCount > 0 || secondaryPatchRecordCount > 0;
   const patchHistoryVerificationStatus: 'verified' | 'unverified' | 'partial' = hasDocumentedPatch
-    ? allPatchesVerified ? 'verified' : (anyPatchVerified ? 'partial' : 'unverified')
+    ? (allPatchesVerified ? 'verified' : (anyPatchVerified ? 'partial' : 'unverified'))
     : 'unverified';
 
   let patchSourceTier: PatchHistorySourceTier = 'none';
@@ -2458,24 +2570,41 @@ export const HEROES: Hero[] = RAW_HEROES.map((h) => {
     patchSourceTier = 'mixed';
   }
 
-  // Category 4: Current Patch Status (Patch 2.2.16a)
-  // Distinguish verified live changes, confirmed absence of changes (audited), and unreviewed
-  const hasCurrentPatchChange = patchHistory.some(
-    (p) => p.patchVersion === CURRENT_ORIGINAL_SERVER_PATCH && p.verificationStatus === 'verified'
-  );
+  const verifiedSources = Array.from(verifiedSourcesMap.values());
+  const hasOfficialVerifiedSource = verifiedSources.some((s) => s.sourceType === 'official');
+  const hasSecondaryVerifiedSource = verifiedSources.some((s) => s.sourceType === 'secondary');
 
-  const isConfirmedUnchangedInCurrentPatch = patchHistory.some(
-    (p) =>
-      p.verificationStatus === 'verified' &&
-      (p.summary.includes('Audited for Patch 2.2.16a') ||
-       p.details.some((d) => d.includes('Audited against Patch 2.2.16a hotfix') && d.includes('no direct live stat adjustments')))
-  );
+  // Compute maximum verified date across actual verified records and audit activities
+  // If no verified evidence exists at all, lastVerifiedDate must be undefined (never fallback to CURRENT_PATCH_DATE)
+  const lastVerifiedDate: string | undefined = verifiedDates.length > 0
+    ? verifiedDates.reduce((max, d) => (d > max ? d : max), verifiedDates[0])
+    : undefined;
 
-  const currentPatchVerificationStatus: CurrentPatchVerificationStatus = hasCurrentPatchChange
-    ? 'verified_changed'
-    : isConfirmedUnchangedInCurrentPatch
-    ? 'confirmed_unchanged'
-    : 'unreviewed';
+  // Source Attribution:
+  let sourceType: SourceType = 'secondary';
+  let sourceName = 'Community In-Game Reference Baseline';
+  let sourceUrl: string | undefined = undefined;
+
+  if (hasOfficialVerifiedSource && hasSecondaryVerifiedSource) {
+    sourceType = 'mixed';
+    sourceName = `Mixed Sources (${verifiedSources.length} sources: Official Moonton & Secondary Archives)`;
+    // For mixed sources: do not point to a single URL that falsely implies one source covers all records!
+    sourceUrl = undefined;
+  } else if (hasOfficialVerifiedSource) {
+    sourceType = 'official';
+    const offSource = verifiedSources.find((s) => s.sourceType === 'official');
+    sourceName = offSource?.sourceName || 'Moonton Official Patch Notes';
+    sourceUrl = offSource?.sourceUrl || 'https://www.mobilelegends.com/news';
+  } else if (hasSecondaryVerifiedSource) {
+    sourceType = 'secondary';
+    const secSource = verifiedSources.find((s) => s.sourceType === 'secondary');
+    sourceName = secSource?.sourceName || 'Liquipedia MLBB Patch Archive';
+    sourceUrl = secSource?.sourceUrl || OFFICIAL_PATCH_ARCHIVE_URL;
+  } else {
+    sourceType = 'secondary';
+    sourceName = 'Community In-Game Reference Baseline';
+    sourceUrl = undefined;
+  }
 
   // Overall Verification Status:
   // Requires ALL categories (skills, mechanics, patch history, active patch) to be verified to claim 'verified'
@@ -2498,46 +2627,21 @@ export const HEROES: Hero[] = RAW_HEROES.map((h) => {
   // Hero Verification Tier:
   let verificationTier: HeroVerificationTier = 'unverified';
   if (isFullyVerified) {
-    verificationTier = patchSourceTier === 'official' ? 'official_verified' : 'secondary_verified';
+    verificationTier = sourceType === 'official' ? 'official_verified' : 'secondary_verified';
   } else if (isPartiallyVerified) {
     verificationTier = 'partially_verified';
   } else {
     verificationTier = 'unverified';
   }
 
-  // Source Attribution:
-  let sourceName = 'Community In-Game Reference Baseline';
-  let sourceUrl = OFFICIAL_PATCH_ARCHIVE_URL;
-  let sourceType: 'official' | 'secondary' = 'secondary';
-  const lastVerifiedDate = hasDocumentedPatch ? patchHistory[0].date : CURRENT_PATCH_DATE;
-
-  if (patchSourceTier === 'mixed') {
-    sourceName = 'Mixed Sources (Official Moonton & Secondary Archives)';
-    sourceUrl = 'https://www.mobilelegends.com/news';
-    sourceType = 'official';
-  } else if (patchSourceTier === 'official') {
-    const offPatch = patchHistory.find((p) => p.sourceType === 'official');
-    sourceName = offPatch?.sourceName || 'Moonton Official Patch Notes';
-    sourceUrl = offPatch?.sourceUrl || 'https://www.mobilelegends.com/news';
-    sourceType = 'official';
-  } else if (patchSourceTier === 'secondary') {
-    sourceName = patchHistory[0]?.sourceName || 'Liquipedia MLBB Patch Archive';
-    sourceUrl = patchHistory[0]?.sourceUrl || OFFICIAL_PATCH_ARCHIVE_URL;
-    sourceType = 'secondary';
-  } else if (currentPatchVerificationStatus === 'confirmed_unchanged') {
-    sourceName = 'Moonton Patch 2.2.16a Audit / Secondary Archive';
-    sourceUrl = patchHistory[0]?.sourceUrl || OFFICIAL_PATCH_ARCHIVE_URL;
-    sourceType = 'secondary';
-  }
-
   // Detailed Evidence Notes:
   let evidenceNotes = '';
   if (currentPatchVerificationStatus === 'verified_changed') {
-    evidenceNotes = `Active Patch 2.2.16a balance tuning verified (${patchSourceTier} archive). Ability kit descriptions remain in-game reference baseline pending official kit documentation.`;
+    evidenceNotes = `Active Patch 2.2.16a balance tuning verified (${sourceType} sources). Ability kit descriptions remain in-game reference baseline pending official kit documentation.`;
   } else if (currentPatchVerificationStatus === 'confirmed_unchanged') {
-    evidenceNotes = `Audited against Patch 2.2.16a hotfix: confirmed absence of direct live stat adjustments. Historical Patch 2.2.16 records verified. Ability kit is in-game baseline.`;
+    evidenceNotes = `Audited against Patch 2.2.16a hotfix (${currentPatchAudit?.sourceName || 'Secondary Archive'}): confirmed absence of direct live stat adjustments. Ability kit descriptions remain in-game reference baseline.`;
   } else if (patchHistoryVerificationStatus === 'verified') {
-    evidenceNotes = `Historical patch records verified (${patchHistory.length} record(s), ${patchSourceTier} source). Current Patch 2.2.16a status unreviewed; core kit remains reference baseline.`;
+    evidenceNotes = `Historical patch records verified (${patchHistory.length} record(s), ${sourceType} sources). Current Patch 2.2.16a status unreviewed; core kit remains reference baseline.`;
   } else {
     evidenceNotes = 'Core mechanics and ability descriptions reflect in-game baseline. No documented patch records verified.';
   }
@@ -2553,15 +2657,19 @@ export const HEROES: Hero[] = RAW_HEROES.map((h) => {
       source: sourceName,
       sourceName,
       sourceUrl,
+      sources: verifiedSources,
       sourceType,
       verificationStatus: overallVerificationStatus,
       verificationTier,
       evidenceNotes,
       verificationNotes: evidenceNotes,
       skillsVerificationStatus,
+      skillsEvidence,
       mechanicsVerificationStatus,
+      mechanicsEvidence,
       patchHistoryVerificationStatus,
       currentPatchVerificationStatus,
+      currentPatchAudit,
       patchSourceTier,
       officialPatchRecordCount,
       secondaryPatchRecordCount,

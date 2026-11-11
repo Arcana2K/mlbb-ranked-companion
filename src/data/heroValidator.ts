@@ -138,6 +138,81 @@ export function validateHeroCatalog(heroes: Hero[]): HeroCatalogValidationReport
         errors.push(`Hero ${h.id} has invalid currentPatchVerificationStatus: "${v.currentPatchVerificationStatus}"`);
       }
 
+      // Category 1 & 2 Evidence Checks
+      if (v.skillsVerificationStatus === 'verified') {
+        if (!v.skillsEvidence) {
+          errors.push(`Hero ${h.id} marked skills as verified without structured skillsEvidence`);
+        } else if (!v.skillsEvidence.sourceUrl || !v.skillsEvidence.sourceName || !v.skillsEvidence.verifiedDate) {
+          errors.push(`Hero ${h.id} has incomplete skillsEvidence (missing sourceUrl, sourceName, or verifiedDate)`);
+        }
+      }
+
+      if (v.mechanicsVerificationStatus === 'verified') {
+        if (!v.mechanicsEvidence) {
+          errors.push(`Hero ${h.id} marked mechanics as verified without structured mechanicsEvidence`);
+        } else if (!v.mechanicsEvidence.sourceUrl || !v.mechanicsEvidence.sourceName || !v.mechanicsEvidence.verifiedDate) {
+          errors.push(`Hero ${h.id} has incomplete mechanicsEvidence (missing sourceUrl, sourceName, or verifiedDate)`);
+        }
+      }
+
+      // Category 4 Current Patch Audit Checks
+      const hasActivePatchChangeRecord = (h.patchHistory || []).some(
+        (p) => p.patchVersion === CURRENT_PATCH_CONFIG.latestOriginalServerPatch && p.verificationStatus === 'verified'
+      );
+
+      if (v.currentPatchVerificationStatus === 'verified_changed') {
+        if (!hasActivePatchChangeRecord) {
+          errors.push(`Hero ${h.id} marked currentPatchVerificationStatus="verified_changed" without verified patch change for ${CURRENT_PATCH_CONFIG.latestOriginalServerPatch}`);
+        }
+        if (!v.currentPatchAudit || v.currentPatchAudit.auditResult !== 'changed') {
+          errors.push(`Hero ${h.id} marked currentPatchVerificationStatus="verified_changed" without structured audit record with auditResult="changed"`);
+        }
+      } else if (v.currentPatchVerificationStatus === 'confirmed_unchanged') {
+        if (hasActivePatchChangeRecord) {
+          errors.push(`Hero ${h.id} marked currentPatchVerificationStatus="confirmed_unchanged" but has active patch change record`);
+        }
+        if (!v.currentPatchAudit || v.currentPatchAudit.auditResult !== 'confirmed_unchanged') {
+          errors.push(`Hero ${h.id} marked currentPatchVerificationStatus="confirmed_unchanged" without structured audit record`);
+        } else {
+          if (!v.currentPatchAudit.auditDate || !/^\d{4}-\d{2}-\d{2}$/.test(v.currentPatchAudit.auditDate)) {
+            errors.push(`Hero ${h.id} has invalid auditDate in currentPatchAudit: "${v.currentPatchAudit.auditDate}"`);
+          }
+          if (!v.currentPatchAudit.sourceName || !v.currentPatchAudit.sourceUrl) {
+            errors.push(`Hero ${h.id} missing source in currentPatchAudit`);
+          }
+          if (!v.currentPatchAudit.notes || v.currentPatchAudit.notes.trim() === '') {
+            errors.push(`Hero ${h.id} missing audit notes in currentPatchAudit`);
+          }
+        }
+      } else if (v.currentPatchVerificationStatus === 'unreviewed') {
+        if (hasActivePatchChangeRecord) {
+          errors.push(`Hero ${h.id} marked currentPatchVerificationStatus="unreviewed" but has verified patch change for ${CURRENT_PATCH_CONFIG.latestOriginalServerPatch}`);
+        }
+      }
+
+      // Source Attribution & Mixed Sources Integrity
+      if (v.sources && Array.isArray(v.sources)) {
+        const hasOfficial = v.sources.some((s) => s.sourceType === 'official');
+        const hasSecondary = v.sources.some((s) => s.sourceType === 'secondary');
+
+        if (hasOfficial && hasSecondary) {
+          if (v.sourceType !== 'mixed') {
+            errors.push(`Hero ${h.id} has both official and secondary sources but sourceType is "${v.sourceType}" instead of "mixed"`);
+          }
+          if (v.sourceUrl && (v.sourceUrl.includes('mobilelegends.com') || v.sourceUrl.includes('liquipedia.net'))) {
+            errors.push(`Hero ${h.id} with mixed sources incorrectly provides a single sourceUrl ("${v.sourceUrl}") implying one source covers all records`);
+          }
+        } else if (hasOfficial && !hasSecondary) {
+          if (v.sourceType !== 'official') {
+            errors.push(`Hero ${h.id} has only official verified sources but sourceType is "${v.sourceType}"`);
+          }
+        } else if (hasSecondary && !hasOfficial) {
+          if (v.sourceType !== 'secondary') {
+            errors.push(`Hero ${h.id} has only secondary verified sources but sourceType is "${v.sourceType}"`);
+          }
+        }
+      }
+
       // Strict enforcement: A hero cannot be fully verified unless skills, mechanics, and current patch are verified
       if (v.verificationStatus === 'verified') {
         if (v.skillsVerificationStatus !== 'verified') {
@@ -187,16 +262,28 @@ export function validateHeroCatalog(heroes: Hero[]): HeroCatalogValidationReport
       }
 
       // Source URL validation
-      if (
-        v.sourceUrl === 'https://www.mobilelegends.com' ||
-        v.sourceUrl === 'https://www.mobilelegends.com/'
-      ) {
-        errors.push(`Hero ${h.id} uses generic homepage as verification evidence instead of specific patch notes.`);
+      if (v.sourceUrl) {
+        if (
+          v.sourceUrl === 'https://www.mobilelegends.com' ||
+          v.sourceUrl === 'https://www.mobilelegends.com/'
+        ) {
+          errors.push(`Hero ${h.id} uses generic homepage as verification evidence instead of specific patch notes.`);
+        }
+
+        // Check source labeling honesty: secondary source must not be labeled as official
+        if (v.sourceUrl.includes('liquipedia.net') && v.sourceType === 'official') {
+          errors.push(`Hero ${h.id} incorrectly labels Liquipedia secondary source as official Moonton source`);
+        }
       }
 
-      // Check source labeling honesty: secondary source must not be labeled as official
-      if (v.sourceUrl && v.sourceUrl.includes('liquipedia.net') && v.sourceType === 'official') {
-        errors.push(`Hero ${h.id} incorrectly labels Liquipedia secondary source as official Moonton source`);
+      // Verification Dates check
+      if (v.lastVerifiedDate) {
+        if (!/^\d{4}-\d{2}-\d{2}$/.test(v.lastVerifiedDate)) {
+          errors.push(`Hero ${h.id} has invalid lastVerifiedDate format (expected YYYY-MM-DD): "${v.lastVerifiedDate}"`);
+        }
+        if (v.lastVerifiedDate > CURRENT_PATCH_CONFIG.patchReleaseDate) {
+          warnings.push(`Hero ${h.id} has lastVerifiedDate (${v.lastVerifiedDate}) ahead of active patch release date (${CURRENT_PATCH_CONFIG.patchReleaseDate})`);
+        }
       }
 
       // Log unverified baseline info for transparency

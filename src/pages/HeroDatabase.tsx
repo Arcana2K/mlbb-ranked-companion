@@ -412,15 +412,21 @@ export const HeroDatabase: React.FC = () => {
                         <CheckCircle2 className="w-4 h-4 text-cyan-400 shrink-0" />
                         <span>Official Moonton Verified</span>
                       </div>
-                      <a
-                        href={selectedHero.verification?.sourceUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center gap-1 text-[11px] text-cyan-400 hover:text-cyan-300 font-mono transition-colors"
-                      >
-                        <span className="truncate max-w-[170px]">{selectedHero.verification?.source}</span>
-                        <ExternalLink className="w-3 h-3 shrink-0" />
-                      </a>
+                      {selectedHero.verification?.sourceUrl ? (
+                        <a
+                          href={selectedHero.verification.sourceUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1 text-[11px] text-cyan-400 hover:text-cyan-300 font-mono transition-colors shrink-0 ml-2"
+                        >
+                          <span className="truncate max-w-[170px]">{selectedHero.verification?.source}</span>
+                          <ExternalLink className="w-3 h-3 shrink-0" />
+                        </a>
+                      ) : (
+                        <span className="text-[11px] text-cyan-400/90 font-mono truncate max-w-[170px] shrink-0 ml-2">
+                          {selectedHero.verification?.source}
+                        </span>
+                      )}
                     </div>
                   ) : selectedTier === 'secondary_verified' ? (
                     <div className="flex items-center justify-between p-2.5 rounded bg-indigo-950/30 border border-indigo-800/50 text-xs">
@@ -428,15 +434,21 @@ export const HeroDatabase: React.FC = () => {
                         <CheckCircle2 className="w-4 h-4 text-indigo-400 shrink-0" />
                         <span>Secondary Archive Verified</span>
                       </div>
-                      <a
-                        href={selectedHero.verification?.sourceUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center gap-1 text-[11px] text-indigo-400 hover:text-indigo-300 font-mono transition-colors"
-                      >
-                        <span className="truncate max-w-[170px]">{selectedHero.verification?.source}</span>
-                        <ExternalLink className="w-3 h-3 shrink-0" />
-                      </a>
+                      {selectedHero.verification?.sourceUrl ? (
+                        <a
+                          href={selectedHero.verification.sourceUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1 text-[11px] text-indigo-400 hover:text-indigo-300 font-mono transition-colors shrink-0 ml-2"
+                        >
+                          <span className="truncate max-w-[170px]">{selectedHero.verification?.source}</span>
+                          <ExternalLink className="w-3 h-3 shrink-0" />
+                        </a>
+                      ) : (
+                        <span className="text-[11px] text-indigo-400/90 font-mono truncate max-w-[170px] shrink-0 ml-2">
+                          {selectedHero.verification?.source}
+                        </span>
+                      )}
                     </div>
                   ) : selectedTier === 'partially_verified' ? (
                     <div className="flex items-center justify-between p-2.5 rounded bg-amber-950/30 border border-amber-800/50 text-xs">
@@ -453,15 +465,21 @@ export const HeroDatabase: React.FC = () => {
                           </span>
                         </div>
                       </div>
-                      <a
-                        href={selectedHero.verification?.sourceUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center gap-1 text-[11px] text-amber-400 hover:text-amber-300 font-mono transition-colors"
-                      >
-                        <span className="truncate max-w-[150px]">{selectedHero.verification?.source}</span>
-                        <ExternalLink className="w-3 h-3 shrink-0" />
-                      </a>
+                      {selectedHero.verification?.sourceUrl ? (
+                        <a
+                          href={selectedHero.verification.sourceUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1 text-[11px] text-amber-400 hover:text-amber-300 font-mono transition-colors shrink-0 ml-2"
+                        >
+                          <span className="truncate max-w-[150px]">{selectedHero.verification?.source}</span>
+                          <ExternalLink className="w-3 h-3 shrink-0" />
+                        </a>
+                      ) : (
+                        <span className="text-[11px] text-amber-400/90 font-mono truncate max-w-[170px] shrink-0 ml-2">
+                          {selectedHero.verification?.source}
+                        </span>
+                      )}
                     </div>
                   ) : (
                     <div className="flex items-center justify-between p-2.5 rounded bg-zinc-950 border border-zinc-800 text-xs">
@@ -1017,32 +1035,32 @@ export const HeroDatabase: React.FC = () => {
                       </div>
                       <div>
                         <span className="text-[10px] text-zinc-500 uppercase block">Last Verified Date:</span>
-                        <span className="text-zinc-200">{selectedHero.verification?.lastVerifiedDate || CURRENT_PATCH_DATE}</span>
+                        <span className="text-zinc-200">{selectedHero.verification?.lastVerifiedDate || 'Pending Audit'}</span>
                       </div>
                       <div className="col-span-2">
                         <span className="text-[10px] text-zinc-500 uppercase block">Source Attribution:</span>
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-1.5 min-w-0">
                             <span className={`px-1.5 py-0.2 rounded text-[9px] font-mono uppercase font-semibold shrink-0 border ${
-                              selectedHero.verification?.patchSourceTier === 'official'
+                              selectedHero.verification?.sourceType === 'official'
                                 ? 'bg-cyan-950 text-cyan-300 border-cyan-800'
-                                : selectedHero.verification?.patchSourceTier === 'mixed'
+                                : selectedHero.verification?.sourceType === 'mixed'
                                 ? 'bg-purple-950 text-purple-300 border-purple-800'
-                                : selectedHero.verification?.patchSourceTier === 'secondary'
+                                : selectedHero.verification?.sourceType === 'secondary'
                                 ? 'bg-indigo-950 text-indigo-300 border-indigo-800'
                                 : 'bg-zinc-900 text-zinc-400 border-zinc-800'
                             }`}>
-                              {selectedHero.verification?.patchSourceTier === 'official'
+                              {selectedHero.verification?.sourceType === 'official'
                                 ? 'Official Primary'
-                                : selectedHero.verification?.patchSourceTier === 'mixed'
+                                : selectedHero.verification?.sourceType === 'mixed'
                                 ? 'Mixed Sources'
-                                : selectedHero.verification?.patchSourceTier === 'secondary'
+                                : selectedHero.verification?.sourceType === 'secondary'
                                 ? 'Secondary Archive'
                                 : 'Reference Baseline'}
                             </span>
                             <span className="text-zinc-300 truncate">{selectedHero.verification?.source}</span>
                           </div>
-                          {selectedHero.verification?.sourceUrl && (
+                          {selectedHero.verification?.sourceUrl ? (
                             <a
                               href={selectedHero.verification.sourceUrl}
                               target="_blank"
@@ -1052,8 +1070,31 @@ export const HeroDatabase: React.FC = () => {
                               <span>Inspect Source</span>
                               <ExternalLink className="w-2.5 h-2.5" />
                             </a>
-                          )}
+                          ) : null}
                         </div>
+                        {selectedHero.verification?.sources && selectedHero.verification.sources.length > 1 && (
+                          <div className="mt-1.5 pt-1.5 border-t border-zinc-850/70 space-y-1">
+                            <span className="text-[9px] text-zinc-500 uppercase block font-medium">Attributed Evidence Sources:</span>
+                            <div className="flex flex-wrap gap-1.5">
+                              {selectedHero.verification.sources.map((src, idx) => (
+                                <a
+                                  key={idx}
+                                  href={src.sourceUrl}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px] font-mono border transition-colors ${
+                                    src.sourceType === 'official'
+                                      ? 'bg-cyan-950/60 text-cyan-300 border-cyan-800/60 hover:border-cyan-700'
+                                      : 'bg-indigo-950/60 text-indigo-300 border-indigo-800/60 hover:border-indigo-700'
+                                  }`}
+                                >
+                                  <span>{src.sourceName} ({src.recordCount})</span>
+                                  <ExternalLink className="w-2 h-2" />
+                                </a>
+                              ))}
+                            </div>
+                          </div>
+                        )}
                       </div>
                       {selectedHero.verification?.evidenceNotes && (
                         <div className="col-span-2 text-[10px] text-zinc-500 pt-0.5">

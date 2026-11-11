@@ -45,7 +45,37 @@ export interface HeroSkill {
 }
 
 export type PatchChangeType = 'buff' | 'nerf' | 'adjustment' | 'revamp' | 'rework';
-export type SourceType = 'official' | 'secondary';
+export type SourceType = 'official' | 'secondary' | 'mixed';
+
+export interface CategoryEvidence {
+  status: 'verified' | 'unverified' | 'community_reference';
+  verificationStatus?: 'verified' | 'unverified' | 'community_reference';
+  sourceName?: string;
+  sourceUrl?: string;
+  sourceType?: 'official' | 'secondary';
+  verifiedDate?: string;
+  evidenceNotes?: string;
+}
+
+export interface CurrentPatchAuditRecord {
+  heroId: string;
+  patchVersion: string;
+  auditDate: string;
+  sourceName: string;
+  sourceUrl: string;
+  sourceType: 'official' | 'secondary';
+  auditResult: 'changed' | 'confirmed_unchanged' | 'unreviewed';
+  notes: string;
+}
+
+export interface SourceAttributionDetail {
+  name: string;
+  sourceName: string;
+  url?: string;
+  sourceUrl?: string;
+  sourceType: SourceType;
+  recordCount: number;
+}
 
 export interface HeroPatchChange {
   id?: string;
@@ -96,11 +126,12 @@ export type PatchHistorySourceTier =
 
 export interface HeroVerificationMetadata {
   currentPatch: string;
-  lastVerifiedDate: string;
+  lastVerifiedDate?: string;
   source: string;
   sourceName?: string;
-  sourceUrl: string;
+  sourceUrl?: string;
   sourceType?: SourceType;
+  sources?: SourceAttributionDetail[];
   verificationStatus: 'verified' | 'unverified' | 'partial';
   verificationTier?: HeroVerificationTier;
   evidenceNotes?: string;
@@ -117,6 +148,11 @@ export interface HeroVerificationMetadata {
   officialPatchRecordCount?: number;
   secondaryPatchRecordCount?: number;
   unverifiedPatchRecordCount?: number;
+
+  // Structured evidence records
+  skillsEvidence?: CategoryEvidence;
+  mechanicsEvidence?: CategoryEvidence;
+  currentPatchAudit?: CurrentPatchAuditRecord;
 }
 
 export interface HeroGameplayMechanics {
