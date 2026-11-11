@@ -460,6 +460,9 @@ export function validateHeroCatalog(heroes: Hero[]): HeroCatalogValidationReport
         }
 
         if (v.verificationTier === 'secondary_verified') {
+          if (v.sourceType !== 'secondary') {
+            errors.push(`Hero ${h.id} marked as secondary_verified but sourceType is "${v.sourceType}" (expected "secondary")`);
+          }
           if (v.verificationStatus !== 'verified') {
             errors.push(`Hero ${h.id} marked as secondary_verified without full verification evidence`);
           }
@@ -472,12 +475,21 @@ export function validateHeroCatalog(heroes: Hero[]): HeroCatalogValidationReport
         }
 
         if (v.verificationTier === 'partially_verified') {
+          if (v.verificationStatus === 'verified') {
+            errors.push(`Hero ${h.id} marked as verificationStatus="verified" but verificationTier is "partially_verified"`);
+          }
           const hasPartialEvidence =
             v.patchHistoryVerificationStatus === 'verified' ||
             v.currentPatchVerificationStatus === 'verified_changed' ||
             v.currentPatchVerificationStatus === 'confirmed_unchanged';
           if (!hasPartialEvidence) {
             warnings.push(`Hero ${h.id} marked as partially_verified without verified patch or active patch evidence`);
+          }
+        }
+
+        if (v.verificationTier === 'unverified') {
+          if (v.verificationStatus === 'verified') {
+            errors.push(`Hero ${h.id} marked as verificationStatus="verified" but verificationTier is "unverified"`);
           }
         }
       }
