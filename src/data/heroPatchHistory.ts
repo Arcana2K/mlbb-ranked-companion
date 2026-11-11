@@ -1313,11 +1313,14 @@ export const HERO_PATCH_HISTORY: Record<string, HeroPatchChange[]> = {
       type: 'buff',
       title: 'Soul Bloom Subsequent Hit Damage & Circling Eagle Repositioning',
       affectedSkillOrAttribute: 'Skill 1 (Soul Bloom) & Ultimate (Circling Eagle)',
-      previousValue: 'Soul Bloom base: 350-625; decay to subsequent hits: 20%',
-      newValue: 'Soul Bloom base: 275-500; decay to subsequent hits: 40% (higher total burst)',
-      summary: 'Enhanced single-target wisp damage and granted flexible directional control on Circling Eagle.',
+      previousValue: 'Soul Bloom: 350–625 + 100% Magic Power; subsequent wisp damage decay: 20%',
+      newValue: 'Soul Bloom: 275–500 + 80% Magic Power; subsequent wisp damage decay: 40%; damage at 3 wisps unchanged; wisp duration slightly increased',
+      summary: 'Adjusted Soul Bloom damage scaling and decay to reward higher wisp stacks while granting flexible directional control on Circling Eagle.',
       details: [
-        'Subsequent wisp hit damage decay reduced from 20% to 40% (whisps deal significantly higher total damage).',
+        'Damage: 350–625 + 100% Magic Power → 275–500 + 80% Magic Power.',
+        'Subsequent wisp damage decay: 20% → 40%.',
+        'Damage at three wisps remains unchanged.',
+        'Wisp duration was slightly increased.',
         'Ultimate allows second-cast directional dash without forcing an immediate collision.'
       ],
       sourceName: 'Liquipedia MLBB Patch Archive (Secondary Source)',
