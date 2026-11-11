@@ -22,6 +22,21 @@ export interface HeroCatalogValidationReport {
 }
 
 /**
+ * Validates whether a date string is a real calendar date strictly formatted as YYYY-MM-DD.
+ */
+export function isValidCalendarDate(dateStr: string): boolean {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) return false;
+  const [y, m, d] = dateStr.split('-').map(Number);
+  if (m < 1 || m > 12 || d < 1 || d > 31) return false;
+  const dateObj = new Date(Date.UTC(y, m - 1, d));
+  return (
+    dateObj.getUTCFullYear() === y &&
+    dateObj.getUTCMonth() + 1 === m &&
+    dateObj.getUTCDate() === d
+  );
+}
+
+/**
  * Strict and granular validator for MLBB Hero Database and Patch History.
  * Audits:
  * 1. Completeness, uniqueness, and cross-reference integrity against the entire roster.
@@ -160,33 +175,88 @@ export function validateHeroCatalog(heroes: Hero[]): HeroCatalogValidationReport
         (p) => p.patchVersion === CURRENT_PATCH_CONFIG.latestOriginalServerPatch && p.verificationStatus === 'verified'
       );
 
+      // Verify status expectations against patch records and audit registry
       if (v.currentPatchVerificationStatus === 'verified_changed') {
+        // Requirement 6: Ensure changed matches an existing verified patch-history record
         if (!hasActivePatchChangeRecord) {
           errors.push(`Hero ${h.id} marked currentPatchVerificationStatus="verified_changed" without verified patch change for ${CURRENT_PATCH_CONFIG.latestOriginalServerPatch}`);
         }
-        if (!v.currentPatchAudit || v.currentPatchAudit.auditResult !== 'changed') {
-          errors.push(`Hero ${h.id} marked currentPatchVerificationStatus="verified_changed" without structured audit record with auditResult="changed"`);
+        if (!v.currentPatchAudit) {
+          errors.push(`Hero ${h.id} marked currentPatchVerificationStatus="verified_changed" without structured currentPatchAudit record`);
+        } else if (v.currentPatchAudit.auditResult !== 'changed') {
+          errors.push(`Hero ${h.id} marked currentPatchVerificationStatus="verified_changed" but currentPatchAudit.auditResult is "${v.currentPatchAudit.auditResult}" (expected "changed")`);
         }
       } else if (v.currentPatchVerificationStatus === 'confirmed_unchanged') {
+        // Requirement 7: Ensure confirmed_unchanged does not conflict with a verified patch-history record
         if (hasActivePatchChangeRecord) {
-          errors.push(`Hero ${h.id} marked currentPatchVerificationStatus="confirmed_unchanged" but has active patch change record`);
+          errors.push(`Hero ${h.id} marked currentPatchVerificationStatus="confirmed_unchanged" but conflicts with verified active patch change record for ${CURRENT_PATCH_CONFIG.latestOriginalServerPatch}`);
         }
-        if (!v.currentPatchAudit || v.currentPatchAudit.auditResult !== 'confirmed_unchanged') {
-          errors.push(`Hero ${h.id} marked currentPatchVerificationStatus="confirmed_unchanged" without structured audit record`);
-        } else {
-          if (!v.currentPatchAudit.auditDate || !/^\d{4}-\d{2}-\d{2}$/.test(v.currentPatchAudit.auditDate)) {
-            errors.push(`Hero ${h.id} has invalid auditDate in currentPatchAudit: "${v.currentPatchAudit.auditDate}"`);
-          }
-          if (!v.currentPatchAudit.sourceName || !v.currentPatchAudit.sourceUrl) {
-            errors.push(`Hero ${h.id} missing source in currentPatchAudit`);
-          }
-          if (!v.currentPatchAudit.notes || v.currentPatchAudit.notes.trim() === '') {
-            errors.push(`Hero ${h.id} missing audit notes in currentPatchAudit`);
-          }
+        if (!v.currentPatchAudit) {
+          errors.push(`Hero ${h.id} marked currentPatchVerificationStatus="confirmed_unchanged" without structured currentPatchAudit record`);
+        } else if (v.currentPatchAudit.auditResult !== 'confirmed_unchanged') {
+          errors.push(`Hero ${h.id} marked currentPatchVerificationStatus="confirmed_unchanged" but currentPatchAudit.auditResult is "${v.currentPatchAudit.auditResult}" (expected "confirmed_unchanged")`);
         }
       } else if (v.currentPatchVerificationStatus === 'unreviewed') {
         if (hasActivePatchChangeRecord) {
           errors.push(`Hero ${h.id} marked currentPatchVerificationStatus="unreviewed" but has verified patch change for ${CURRENT_PATCH_CONFIG.latestOriginalServerPatch}`);
+        }
+        if (v.currentPatchAudit && (v.currentPatchAudit.auditResult === 'changed' || v.currentPatchAudit.auditResult === 'confirmed_unchanged')) {
+          errors.push(`Hero ${h.id} marked currentPatchVerificationStatus="unreviewed" but has active currentPatchAudit with auditResult="${v.currentPatchAudit.auditResult}"`);
+        }
+      }
+
+      // Requirements 1-5: Validate currentPatchAudit record (applied to both changed and confirmed_unchanged)
+      if (v.currentPatchAudit) {
+        const audit = v.currentPatchAudit;
+
+        // Requirement 1: Verify that each audit record's heroId matches its hero
+        if (audit.heroId !== h.id) {
+          errors.push(`Hero ${h.id} currentPatchAudit heroId mismatch: "${audit.heroId}" does not match hero id "${h.id}"`);
+        }
+
+        // Requirement 2: Verify that patchVersion matches the active Original Server patch
+        if (audit.patchVersion !== CURRENT_PATCH_CONFIG.latestOriginalServerPatch) {
+          errors.push(`Hero ${h.id} currentPatchAudit patchVersion "${audit.patchVersion}" does not match active Original Server patch "${CURRENT_PATCH_CONFIG.latestOriginalServerPatch}"`);
+        }
+
+        // Requirement 3: Validate the audit date as a real calendar date in YYYY-MM-DD format
+        if (!audit.auditDate || !isValidCalendarDate(audit.auditDate)) {
+          errors.push(`Hero ${h.id} currentPatchAudit has invalid calendar auditDate: "${audit.auditDate}" (expected valid YYYY-MM-DD)`);
+        }
+
+        // Requirement 4: Require a valid source name, specific source URL, source type, and non-empty notes
+        if (!audit.sourceName || audit.sourceName.trim() === '') {
+          errors.push(`Hero ${h.id} currentPatchAudit missing valid sourceName`);
+        }
+
+        if (!audit.sourceUrl || audit.sourceUrl.trim() === '') {
+          errors.push(`Hero ${h.id} currentPatchAudit missing specific sourceUrl`);
+        } else {
+          if (
+            audit.sourceUrl === 'https://www.mobilelegends.com' ||
+            audit.sourceUrl === 'https://www.mobilelegends.com/'
+          ) {
+            errors.push(`Hero ${h.id} currentPatchAudit uses generic homepage as source URL instead of specific patch notes source`);
+          }
+          if (audit.sourceUrl.includes('liquipedia.net') && audit.sourceType === 'official') {
+            errors.push(`Hero ${h.id} currentPatchAudit mislabels Liquipedia secondary source as official`);
+          }
+        }
+
+        if (!['official', 'secondary'].includes(audit.sourceType)) {
+          errors.push(`Hero ${h.id} currentPatchAudit has invalid sourceType: "${audit.sourceType}" (expected "official" or "secondary")`);
+        }
+
+        if (!audit.notes || audit.notes.trim() === '') {
+          errors.push(`Hero ${h.id} currentPatchAudit missing non-empty audit notes`);
+        }
+
+        // Requirement 6 & 7: Check auditResult cross-consistency with patch history
+        if (audit.auditResult === 'changed' && !hasActivePatchChangeRecord) {
+          errors.push(`Hero ${h.id} currentPatchAudit specifies auditResult="changed" but lacks verified patch change record for ${CURRENT_PATCH_CONFIG.latestOriginalServerPatch}`);
+        }
+        if (audit.auditResult === 'confirmed_unchanged' && hasActivePatchChangeRecord) {
+          errors.push(`Hero ${h.id} currentPatchAudit specifies auditResult="confirmed_unchanged" but conflicts with verified active patch change record for ${CURRENT_PATCH_CONFIG.latestOriginalServerPatch}`);
         }
       }
 
@@ -332,8 +402,8 @@ export function validateHeroCatalog(heroes: Hero[]): HeroCatalogValidationReport
 
       // Verification Dates check
       if (v.lastVerifiedDate) {
-        if (!/^\d{4}-\d{2}-\d{2}$/.test(v.lastVerifiedDate)) {
-          errors.push(`Hero ${h.id} has invalid lastVerifiedDate format (expected YYYY-MM-DD): "${v.lastVerifiedDate}"`);
+        if (!isValidCalendarDate(v.lastVerifiedDate)) {
+          errors.push(`Hero ${h.id} has invalid lastVerifiedDate format (expected valid calendar date in YYYY-MM-DD): "${v.lastVerifiedDate}"`);
         }
         if (v.lastVerifiedDate > CURRENT_PATCH_CONFIG.patchReleaseDate) {
           warnings.push(`Hero ${h.id} has lastVerifiedDate (${v.lastVerifiedDate}) ahead of active patch release date (${CURRENT_PATCH_CONFIG.patchReleaseDate})`);
@@ -384,8 +454,8 @@ export function validateHeroCatalog(heroes: Hero[]): HeroCatalogValidationReport
           }
         }
 
-        if (!patch.date || !/^\d{4}-\d{2}-\d{2}$/.test(patch.date)) {
-          errors.push(`Hero ${h.id} has patch change with invalid date format (expected YYYY-MM-DD): "${patch.date}"`);
+        if (!patch.date || !isValidCalendarDate(patch.date)) {
+          errors.push(`Hero ${h.id} has patch change with invalid date format (expected valid calendar date in YYYY-MM-DD): "${patch.date}"`);
         }
         if (!['revamp', 'rework', 'buff', 'nerf', 'adjustment'].includes(patch.type)) {
           errors.push(`Hero ${h.id} has patch change with invalid type: "${patch.type}"`);
