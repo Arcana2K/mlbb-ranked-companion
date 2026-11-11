@@ -234,20 +234,20 @@ export const HERO_PATCH_HISTORY: Record<string, HeroPatchChange[]> = {
       patchVersion: 'Patch 2.2.16',
       date: '2026-09-16',
       type: 'adjustment',
-      title: 'Passive Spell Siphon & Stasis Basic Attack Interaction',
-      affectedSkillOrAttribute: 'Passive (Spell Siphon)',
-      previousValue: 'Multiple enhanced basic attack charges could queue during damage freeze stasis',
-      newValue: 'Standardized consumption on next basic attack post-freeze; single charge state maintained',
-      summary: 'Standardized basic attack consumption and interaction with stasis mechanics. Audited for Patch 2.2.16a: verified no direct live stat changes occurred in the 2.2.16a hotfix.',
+      title: 'Unverified Passive Basic Attack Stasis Claim',
+      affectedSkillOrAttribute: 'Passive (Spell Curse)',
+      previousValue: 'Unsubstantiated claim of multiple enhanced basic attack charges queuing during stasis',
+      newValue: 'Unsubstantiated claim of standardized consumption on next basic attack post-freeze',
+      summary: 'Unverified patch change claim regarding passive basic attack stasis interaction; not corroborated by cited Moonton or Liquipedia Patch 2.2.16 notes.',
       details: [
-        'Audited against Patch 2.2.16a hotfix: verified Khufra received no direct live stat adjustments; changes were restricted to Aulus, Hirara, Eudora, Rafaela, and Kalea.',
-        'Passive Spell Siphon interaction with damage-freeze mechanics standardized post-Patch 2.2.16.',
-        'Core crowd-control capabilities and bounce mechanics remain in verified S-tier tank baseline.'
+        'Unverified: Cited official Moonton Patch 2.2.16 documentation (article 3503357) and Liquipedia Patch 2.2.16 archive do not establish a live basic-attack or Spell Curse stasis adjustment for Khufra.',
+        'While secondary reference MLBBHub notes Khufra under adjusted heroes in 2.2.16a, exact adjustment details have not been officially documented or verified.',
+        'Retained as unverified historical record for transparency; not counted as verified balance history.'
       ],
       sourceName: 'Liquipedia MLBB Patch Archive (Secondary Source)',
       sourceUrl: 'https://liquipedia.net/mobilelegends/Patch_2.2.16',
       sourceType: 'secondary',
-      verificationStatus: 'verified',
+      verificationStatus: 'unverified',
       serverType: 'original'
     }
   ],
@@ -264,16 +264,16 @@ export const HERO_PATCH_HISTORY: Record<string, HeroPatchChange[]> = {
       date: '2026-09-16',
       type: 'revamp',
       title: 'Season 42 Comprehensive Hero Revamp',
-      affectedSkillOrAttribute: 'Passive (Ancient Strength) & All Skills',
+      affectedSkillOrAttribute: 'Passive (Ancient Strength → Primal Pact) & All Skills',
       previousValue: 'Traditional split-pusher with basic attack disarm mechanic',
       newValue: '3-HP-bar sustained teamfight berserker with directional Feral Wound mechanic',
       summary: 'Complete overhaul from split-pusher into a sustained teamfight berserker with the Feral Wound mechanic.',
       details: [
-        'Passive (Ancient Strength): Retains 3-HP-bar structure; damage dealt charges Feral energy.',
+        'Passive: Historical passive Ancient Strength was replaced by Primal Pact, retaining the trademark 3-HP-bar structure while introducing Feral energy accumulation.',
         'New Wound Mechanic: Skills apply directional Wound marks; striking from that angle activates Feral State with AoE claw swipes and Attack Speed.',
         'Skill 1 (Feral Swipe): Reworked into a forward energy wave that damages and slows targets.',
-        'Skill 2: Swift mobility dash allowing precise positioning around enemy wound angles.',
-        'Ultimate: Locks down and stuns the target before delivering heavy burst damage; retains CC purify upon losing an HP bar.'
+        'Skill 2 (Claw Strike): Swift mobility dash allowing precise positioning around enemy wound angles.',
+        'Ultimate (Savage Maul): Locks down and stuns the target before delivering heavy burst damage; retains CC purify upon losing an HP bar.'
       ],
       sourceName: 'Liquipedia MLBB Patch Archive (Secondary Source)',
       sourceUrl: 'https://liquipedia.net/mobilelegends/Patch_2.2.16',

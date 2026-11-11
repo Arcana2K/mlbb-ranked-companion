@@ -96,7 +96,7 @@ export const HERO_SKILLS_DATA: Record<string, HeroSkillRecord> = {
     "skills": [
       {
         "id": "passive",
-        "name": "Spell Scurry",
+        "name": "Spell Curse",
         "type": "Passive",
         "tags": [
           "Buff",
@@ -2937,7 +2937,7 @@ export const HERO_SKILLS_DATA: Record<string, HeroSkillRecord> = {
       },
       {
         "id": "skill2",
-        "name": "Quick Pounce",
+        "name": "Claw Strike",
         "type": "Skill 2",
         "tags": [
           "Blink",
@@ -2948,7 +2948,7 @@ export const HERO_SKILLS_DATA: Record<string, HeroSkillRecord> = {
       },
       {
         "id": "ultimate",
-        "name": "Thunderous Strike",
+        "name": "Savage Maul",
         "type": "Ultimate",
         "tags": [
           "Crowd Control",
