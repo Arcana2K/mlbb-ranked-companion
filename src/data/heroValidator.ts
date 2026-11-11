@@ -153,22 +153,74 @@ export function validateHeroCatalog(heroes: Hero[]): HeroCatalogValidationReport
         errors.push(`Hero ${h.id} has invalid currentPatchVerificationStatus: "${v.currentPatchVerificationStatus}"`);
       }
 
-      // Category 1 & 2 Evidence Checks
-      if (v.skillsVerificationStatus === 'verified') {
-        if (!v.skillsEvidence) {
-          errors.push(`Hero ${h.id} marked skills as verified without structured skillsEvidence`);
-        } else if (!v.skillsEvidence.sourceUrl || !v.skillsEvidence.sourceName || !v.skillsEvidence.verifiedDate) {
-          errors.push(`Hero ${h.id} has incomplete skillsEvidence (missing sourceUrl, sourceName, or verifiedDate)`);
-        }
-      }
+      // Category 1 & 2 Evidence Checks (Skills and Mechanics)
+      const validateEvidence = (
+        categoryName: 'skills' | 'mechanics',
+        status: 'verified' | 'unverified' | 'community_reference',
+        evidence: typeof v.skillsEvidence
+      ) => {
+        if (status === 'verified') {
+          // Requirement 1 & 2: verified status requires complete and valid evidence
+          if (!evidence) {
+            errors.push(`Hero ${h.id} marked ${categoryName} as verified without structured ${categoryName}Evidence`);
+            return;
+          }
 
-      if (v.mechanicsVerificationStatus === 'verified') {
-        if (!v.mechanicsEvidence) {
-          errors.push(`Hero ${h.id} marked mechanics as verified without structured mechanicsEvidence`);
-        } else if (!v.mechanicsEvidence.sourceUrl || !v.mechanicsEvidence.sourceName || !v.mechanicsEvidence.verifiedDate) {
-          errors.push(`Hero ${h.id} has incomplete mechanicsEvidence (missing sourceUrl, sourceName, or verifiedDate)`);
+          // Requirement 5: Ensure unverified or community-reference data cannot be counted as verified
+          const evidenceStatus = evidence.verificationStatus || evidence.status;
+          if (evidenceStatus !== 'verified') {
+            errors.push(`Hero ${h.id} marked ${categoryName}VerificationStatus="verified" but ${categoryName}Evidence status is "${evidenceStatus}"`);
+          }
+
+          // Requirement 3: Validate source name, specific source URL, source type, and real calendar verification date
+          if (!evidence.sourceName || evidence.sourceName.trim() === '') {
+            errors.push(`Hero ${h.id} has incomplete ${categoryName}Evidence: missing sourceName`);
+          }
+
+          if (!evidence.sourceUrl || evidence.sourceUrl.trim() === '') {
+            errors.push(`Hero ${h.id} has incomplete ${categoryName}Evidence: missing sourceUrl`);
+          } else {
+            // Requirement 4: Reject generic homepage URLs and incorrect official/secondary source labels
+            if (
+              evidence.sourceUrl === 'https://www.mobilelegends.com' ||
+              evidence.sourceUrl === 'https://www.mobilelegends.com/'
+            ) {
+              errors.push(`Hero ${h.id} ${categoryName}Evidence uses generic homepage as sourceUrl instead of specific documentation`);
+            }
+            if (evidence.sourceUrl.includes('liquipedia.net') && evidence.sourceType === 'official') {
+              errors.push(`Hero ${h.id} ${categoryName}Evidence mislabels Liquipedia secondary source as official`);
+            }
+          }
+
+          if (!evidence.sourceType || !['official', 'secondary'].includes(evidence.sourceType)) {
+            errors.push(`Hero ${h.id} ${categoryName}Evidence has invalid sourceType: "${evidence.sourceType}" (expected "official" or "secondary")`);
+          }
+
+          if (!evidence.verifiedDate || !isValidCalendarDate(evidence.verifiedDate)) {
+            errors.push(`Hero ${h.id} ${categoryName}Evidence has invalid calendar verifiedDate: "${evidence.verifiedDate}" (expected valid YYYY-MM-DD)`);
+          }
+        } else {
+          // If status is unverified or community_reference, ensure verified evidence is not inconsistently attached without updating status
+          if (evidence) {
+            const evidenceStatus = evidence.verificationStatus || evidence.status;
+            if (evidenceStatus === 'verified') {
+              errors.push(`Hero ${h.id} has verified ${categoryName}Evidence but ${categoryName}VerificationStatus is "${status}"`);
+            }
+            if (evidence.verifiedDate && !isValidCalendarDate(evidence.verifiedDate)) {
+              errors.push(`Hero ${h.id} ${categoryName}Evidence has invalid calendar verifiedDate: "${evidence.verifiedDate}"`);
+            }
+            if (evidence.sourceUrl && (evidence.sourceUrl === 'https://www.mobilelegends.com' || evidence.sourceUrl === 'https://www.mobilelegends.com/')) {
+              errors.push(`Hero ${h.id} ${categoryName}Evidence uses generic homepage as sourceUrl`);
+            }
+            if (evidence.sourceUrl && evidence.sourceUrl.includes('liquipedia.net') && evidence.sourceType === 'official') {
+              errors.push(`Hero ${h.id} ${categoryName}Evidence mislabels Liquipedia secondary source as official`);
+            }
+          }
         }
-      }
+      };
+
+      validateEvidence('skills', v.skillsVerificationStatus, v.skillsEvidence);
+      validateEvidence('mechanics', v.mechanicsVerificationStatus, v.mechanicsEvidence);
 
       // Category 4 Current Patch Audit Checks
       const hasActivePatchChangeRecord = (h.patchHistory || []).some(
@@ -332,6 +384,9 @@ export function validateHeroCatalog(heroes: Hero[]): HeroCatalogValidationReport
         if (v.skillsVerificationStatus !== 'verified') {
           errors.push(`Hero ${h.id} marked as fully verified but skillsVerificationStatus is "${v.skillsVerificationStatus}"`);
         }
+        if (v.mechanicsVerificationStatus !== 'verified') {
+          errors.push(`Hero ${h.id} marked as fully verified but mechanicsVerificationStatus is "${v.mechanicsVerificationStatus}"`);
+        }
         if (!['verified', 'verified_changed', 'confirmed_unchanged'].includes(v.currentPatchVerificationStatus)) {
           errors.push(`Hero ${h.id} marked as fully verified but currentPatchVerificationStatus is "${v.currentPatchVerificationStatus}"`);
         }
@@ -360,8 +415,11 @@ export function validateHeroCatalog(heroes: Hero[]): HeroCatalogValidationReport
           if (v.verificationStatus !== 'verified' || v.sourceType !== 'official') {
             errors.push(`Hero ${h.id} marked as official_verified without full official verification evidence`);
           }
-          if (v.skillsVerificationStatus === 'community_reference') {
-            errors.push(`Hero ${h.id} marked as official_verified but skills are community_reference`);
+          if (v.skillsVerificationStatus !== 'verified') {
+            errors.push(`Hero ${h.id} marked as official_verified but skillsVerificationStatus is "${v.skillsVerificationStatus}"`);
+          }
+          if (v.mechanicsVerificationStatus !== 'verified') {
+            errors.push(`Hero ${h.id} marked as official_verified but mechanicsVerificationStatus is "${v.mechanicsVerificationStatus}"`);
           }
         }
 
@@ -369,8 +427,11 @@ export function validateHeroCatalog(heroes: Hero[]): HeroCatalogValidationReport
           if (v.verificationStatus !== 'verified') {
             errors.push(`Hero ${h.id} marked as secondary_verified without full verification evidence`);
           }
-          if (v.skillsVerificationStatus === 'community_reference') {
-            errors.push(`Hero ${h.id} marked as secondary_verified but skills are community_reference`);
+          if (v.skillsVerificationStatus !== 'verified') {
+            errors.push(`Hero ${h.id} marked as secondary_verified but skillsVerificationStatus is "${v.skillsVerificationStatus}"`);
+          }
+          if (v.mechanicsVerificationStatus !== 'verified') {
+            errors.push(`Hero ${h.id} marked as secondary_verified but mechanicsVerificationStatus is "${v.mechanicsVerificationStatus}"`);
           }
         }
 
