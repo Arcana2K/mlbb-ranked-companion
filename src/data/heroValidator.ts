@@ -37,6 +37,36 @@ export function isValidCalendarDate(dateStr: string): boolean {
 }
 
 /**
+ * Validates whether a string is a well-formed absolute HTTP/HTTPS URL.
+ */
+export function isValidUrl(urlString: string): boolean {
+  if (!urlString || typeof urlString !== 'string' || urlString.trim() === '') return false;
+  try {
+    const parsed = new URL(urlString);
+    return parsed.protocol === 'http:' || parsed.protocol === 'https:';
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Checks if a URL points to a generic domain root rather than specific documentation.
+ */
+export function isGenericHomepageUrl(urlString: string): boolean {
+  if (!urlString || typeof urlString !== 'string') return false;
+  try {
+    const parsed = new URL(urlString);
+    const host = parsed.hostname.toLowerCase();
+    if (host === 'www.mobilelegends.com' || host === 'mobilelegends.com') {
+      return parsed.pathname === '' || parsed.pathname === '/';
+    }
+    return false;
+  } catch {
+    return false;
+  }
+}
+
+/**
  * Strict and granular validator for MLBB Hero Database and Patch History.
  * Audits:
  * 1. Completeness, uniqueness, and cross-reference integrity against the entire roster.
@@ -159,61 +189,88 @@ export function validateHeroCatalog(heroes: Hero[]): HeroCatalogValidationReport
         status: 'verified' | 'unverified' | 'community_reference',
         evidence: typeof v.skillsEvidence
       ) => {
+        // Requirement 4: Continue requiring complete evidence and a valid calendar date for verified categories
         if (status === 'verified') {
-          // Requirement 1 & 2: verified status requires complete and valid evidence
           if (!evidence) {
             errors.push(`Hero ${h.id} marked ${categoryName} as verified without structured ${categoryName}Evidence`);
             return;
           }
+        }
 
-          // Requirement 5: Ensure unverified or community-reference data cannot be counted as verified
+        // Validate attached evidence record (applies to verified, unverified, and community-reference evidence)
+        if (evidence) {
+          // Requirement 1: When both status and verificationStatus exist, report an error if their values disagree
+          if (evidence.status && evidence.verificationStatus && evidence.status !== evidence.verificationStatus) {
+            errors.push(
+              `Hero ${h.id} ${categoryName}Evidence has conflicting status values: status="${evidence.status}" vs verificationStatus="${evidence.verificationStatus}"`
+            );
+          }
+
           const evidenceStatus = evidence.verificationStatus || evidence.status;
-          if (evidenceStatus !== 'verified') {
-            errors.push(`Hero ${h.id} marked ${categoryName}VerificationStatus="verified" but ${categoryName}Evidence status is "${evidenceStatus}"`);
+
+          // Requirement 5: Do not automatically promote unverified or community-reference evidence to verified
+          if (status === 'verified' && evidenceStatus !== 'verified') {
+            errors.push(
+              `Hero ${h.id} marked ${categoryName}VerificationStatus="verified" but ${categoryName}Evidence status is "${evidenceStatus}"`
+            );
+          }
+          if (status !== 'verified' && evidenceStatus === 'verified') {
+            errors.push(
+              `Hero ${h.id} has verified ${categoryName}Evidence but ${categoryName}VerificationStatus is "${status}"`
+            );
           }
 
-          // Requirement 3: Validate source name, specific source URL, source type, and real calendar verification date
-          if (!evidence.sourceName || evidence.sourceName.trim() === '') {
-            errors.push(`Hero ${h.id} has incomplete ${categoryName}Evidence: missing sourceName`);
-          }
-
-          if (!evidence.sourceUrl || evidence.sourceUrl.trim() === '') {
-            errors.push(`Hero ${h.id} has incomplete ${categoryName}Evidence: missing sourceUrl`);
+          // Requirement 2 & 4: Validate source fields and source type for every attached evidence record
+          if (status === 'verified') {
+            if (!evidence.sourceName || evidence.sourceName.trim() === '') {
+              errors.push(`Hero ${h.id} has incomplete ${categoryName}Evidence: missing sourceName`);
+            }
+            if (!evidence.sourceUrl || evidence.sourceUrl.trim() === '') {
+              errors.push(`Hero ${h.id} has incomplete ${categoryName}Evidence: missing sourceUrl`);
+            }
+            if (!evidence.sourceType) {
+              errors.push(`Hero ${h.id} has incomplete ${categoryName}Evidence: missing sourceType`);
+            }
+            if (!evidence.verifiedDate) {
+              errors.push(`Hero ${h.id} has incomplete ${categoryName}Evidence: missing verifiedDate`);
+            }
           } else {
-            // Requirement 4: Reject generic homepage URLs and incorrect official/secondary source labels
-            if (
-              evidence.sourceUrl === 'https://www.mobilelegends.com' ||
-              evidence.sourceUrl === 'https://www.mobilelegends.com/'
-            ) {
+            // For unverified/community-reference evidence, if fields are attached, they must be valid non-empty values
+            if (evidence.sourceName !== undefined && evidence.sourceName.trim() === '') {
+              errors.push(`Hero ${h.id} ${categoryName}Evidence has empty sourceName`);
+            }
+            if (evidence.sourceUrl !== undefined && evidence.sourceUrl.trim() === '') {
+              errors.push(`Hero ${h.id} ${categoryName}Evidence has empty sourceUrl`);
+            }
+          }
+
+          // Requirement 3: Reject malformed URLs and generic homepage URLs (for every attached evidence record)
+          if (evidence.sourceUrl !== undefined && evidence.sourceUrl.trim() !== '') {
+            if (!isValidUrl(evidence.sourceUrl)) {
+              errors.push(`Hero ${h.id} ${categoryName}Evidence has malformed sourceUrl: "${evidence.sourceUrl}"`);
+            } else if (isGenericHomepageUrl(evidence.sourceUrl)) {
               errors.push(`Hero ${h.id} ${categoryName}Evidence uses generic homepage as sourceUrl instead of specific documentation`);
             }
+
+            // Reject incorrect official/secondary source labels
             if (evidence.sourceUrl.includes('liquipedia.net') && evidence.sourceType === 'official') {
               errors.push(`Hero ${h.id} ${categoryName}Evidence mislabels Liquipedia secondary source as official`);
             }
           }
 
-          if (!evidence.sourceType || !['official', 'secondary'].includes(evidence.sourceType)) {
-            errors.push(`Hero ${h.id} ${categoryName}Evidence has invalid sourceType: "${evidence.sourceType}" (expected "official" or "secondary")`);
+          // Validate sourceType for every attached evidence record
+          if (evidence.sourceType !== undefined && !['official', 'secondary'].includes(evidence.sourceType)) {
+            errors.push(
+              `Hero ${h.id} ${categoryName}Evidence has invalid sourceType: "${evidence.sourceType}" (expected "official" or "secondary")`
+            );
           }
 
-          if (!evidence.verifiedDate || !isValidCalendarDate(evidence.verifiedDate)) {
-            errors.push(`Hero ${h.id} ${categoryName}Evidence has invalid calendar verifiedDate: "${evidence.verifiedDate}" (expected valid YYYY-MM-DD)`);
-          }
-        } else {
-          // If status is unverified or community_reference, ensure verified evidence is not inconsistently attached without updating status
-          if (evidence) {
-            const evidenceStatus = evidence.verificationStatus || evidence.status;
-            if (evidenceStatus === 'verified') {
-              errors.push(`Hero ${h.id} has verified ${categoryName}Evidence but ${categoryName}VerificationStatus is "${status}"`);
-            }
-            if (evidence.verifiedDate && !isValidCalendarDate(evidence.verifiedDate)) {
-              errors.push(`Hero ${h.id} ${categoryName}Evidence has invalid calendar verifiedDate: "${evidence.verifiedDate}"`);
-            }
-            if (evidence.sourceUrl && (evidence.sourceUrl === 'https://www.mobilelegends.com' || evidence.sourceUrl === 'https://www.mobilelegends.com/')) {
-              errors.push(`Hero ${h.id} ${categoryName}Evidence uses generic homepage as sourceUrl`);
-            }
-            if (evidence.sourceUrl && evidence.sourceUrl.includes('liquipedia.net') && evidence.sourceType === 'official') {
-              errors.push(`Hero ${h.id} ${categoryName}Evidence mislabels Liquipedia secondary source as official`);
+          // Validate verifiedDate calendar validity whenever present
+          if (evidence.verifiedDate !== undefined) {
+            if (!isValidCalendarDate(evidence.verifiedDate)) {
+              errors.push(
+                `Hero ${h.id} ${categoryName}Evidence has invalid calendar verifiedDate: "${evidence.verifiedDate}" (expected valid YYYY-MM-DD)`
+              );
             }
           }
         }
