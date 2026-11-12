@@ -68,11 +68,11 @@ export const CURRENT_PATCH_AUDIT_REGISTRY: Record<string, CurrentPatchAuditRecor
     heroId: 'khufra',
     patchVersion: CURRENT_ORIGINAL_SERVER_PATCH,
     auditDate: '2026-10-14',
-    sourceName: 'Liquipedia MLBB Patch 2.2.16a Hotfix Archive',
-    sourceUrl: 'https://liquipedia.net/mobilelegends/Patch_2.2.16a',
+    sourceName: 'MLBBHub Patch Archive (Secondary Source)',
+    sourceUrl: 'https://mlbbhub.com/patch-notes/original/2.2.16a',
     sourceType: 'secondary',
-    auditResult: 'confirmed_unchanged',
-    notes: 'Reviewed against official Patch 2.2.16a hotfix release; confirmed no live stat or balance adjustments were applied to Khufra.'
+    auditResult: 'changed',
+    notes: 'Documented mechanical bug fix to Passive Spell Curse: enhanced Basic Attack immediate consumption upon dealing damage.'
   }
 };
 

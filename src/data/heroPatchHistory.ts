@@ -234,21 +234,20 @@ export const HERO_PATCH_HISTORY: Record<string, HeroPatchChange[]> = {
       patchVersion: 'Patch 2.2.16a',
       date: '2026-10-14',
       type: 'adjustment',
-      title: 'Unverified Patch 2.2.16a Adjustment Listing',
-      affectedSkillOrAttribute: 'Unspecified (Listed under ADJ on MLBBHub)',
-      previousValue: 'Missing from source (no baseline numerical or skill value published on MLBBHub 2.2.16a entry)',
-      newValue: 'Missing from source (no adjusted numerical or skill value published on MLBBHub 2.2.16a entry)',
-      summary: 'Listed under ADJ (Adjusted) in MLBBHub Patch 2.2.16a notes, but specific skill, attribute, and numerical details are missing from the source.',
+      title: 'Passive Spell Curse Basic Attack Multiple Use Bug Fix',
+      affectedSkillOrAttribute: 'Passive (Spell Curse)',
+      previousValue: 'Enhanced Basic Attack could potentially be used multiple times under certain circumstances without immediate consumption',
+      newValue: 'Enhanced Basic Attack is consumed immediately upon dealing damage',
+      summary: "Fixed an issue where Khufra's enhanced Basic Attack could be used multiple times under certain circumstances. It is now consumed immediately upon dealing damage.",
       details: [
-        'MLBBHub lists Khufra under "ADJ" (Adjusted) for Original Server Patch 2.2.16a (release date 2026-10-14).',
-        'Inspection of the MLBBHub Patch 2.2.16a entry confirms that no specific skill, attribute, previous value, or new value is detailed for Khufra.',
-        'Moonton official release and Liquipedia patch archives restrict detailed adjustments in Patch 2.2.16a to Kalea, Aulus, Hirara, Eudora, and Rafaela.',
-        'Retained as an unverified record per instructions to prevent inventing missing values or descriptions.'
+        "Fixed an issue where Khufra's enhanced Basic Attack could be used multiple times under certain circumstances.",
+        'It is now consumed immediately upon dealing damage.',
+        'Documented by MLBBHub secondary patch archive; non-numerical mechanical bug fix.'
       ],
       sourceName: 'MLBBHub Patch Archive (Secondary Source)',
       sourceUrl: 'https://mlbbhub.com/patch-notes/original/2.2.16a',
       sourceType: 'secondary',
-      verificationStatus: 'unverified',
+      verificationStatus: 'verified',
       serverType: 'original'
     }
   ],
