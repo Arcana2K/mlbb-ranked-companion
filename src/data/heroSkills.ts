@@ -2903,7 +2903,7 @@ export const HERO_SKILLS_DATA: Record<string, HeroSkillRecord> = {
     "crowdControl": [
       "Stun",
       "Slow",
-      "Disarm"
+      "Knockback"
     ],
     "mobility": [
       "Feral Dash"
@@ -2922,7 +2922,7 @@ export const HERO_SKILLS_DATA: Record<string, HeroSkillRecord> = {
           "Feral State",
           "Purify"
         ],
-        "description": "Possesses 3 distinct HP bars. Attacking enemies charges Feral energy. Striking targets from their directional Wound angle triggers Feral State with AoE claw swipes and resilience."
+        "description": "Possesses 3 distinct HP bars, clearing control effects and blocking lethal damage upon losing a bar. Dealing damage charges Feral energy. Striking targets from their directional Wound angle triggers Feral State, granting Resilience, Attack Speed, Movement Speed, and enhanced wide-range claw strikes that restore HP."
       },
       {
         "id": "skill1",
@@ -2933,7 +2933,7 @@ export const HERO_SKILLS_DATA: Record<string, HeroSkillRecord> = {
           "Slow"
         ],
         "cooldown": "6.0s",
-        "description": "Fires an energy wave forward that damages and slows enemies hit, acting as her core wave-clearing tool."
+        "description": "Releases an energy surge forward, dealing Physical Damage to enemies in her path and slowing enemy heroes hit."
       },
       {
         "id": "skill2",
@@ -2944,7 +2944,7 @@ export const HERO_SKILLS_DATA: Record<string, HeroSkillRecord> = {
           "Mobility"
         ],
         "cooldown": "8.0s",
-        "description": "Swift mobility dash allowing rapid repositioning around enemies to align with directional Wound striking angles."
+        "description": "Dashes in a target direction, unleashing a wide-range claw strike upon reaching max range or colliding with a non-minion enemy. Cooldown resets automatically whenever an HP bar is lost."
       },
       {
         "id": "ultimate",
@@ -2953,10 +2953,11 @@ export const HERO_SKILLS_DATA: Record<string, HeroSkillRecord> = {
         "tags": [
           "Crowd Control",
           "Stun",
+          "Knockback",
           "Burst"
         ],
         "cooldown": "30.0s",
-        "description": "Locks down and stuns the target enemy hero before delivering a heavy physical burst; retains CC purify upon losing an HP bar."
+        "description": "Charges directly at a target enemy hero, dealing Physical Damage, stunning the target, and knocking back surrounding nearby enemies."
       }
     ]
   },
