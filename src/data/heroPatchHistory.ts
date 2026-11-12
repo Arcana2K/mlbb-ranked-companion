@@ -228,24 +228,25 @@ export const HERO_PATCH_HISTORY: Record<string, HeroPatchChange[]> = {
   ],
   khufra: [
     {
-      id: 'khufra-2.2.16',
+      id: 'khufra-2.2.16a',
       heroId: 'khufra',
       heroName: 'Khufra',
-      patchVersion: 'Patch 2.2.16',
-      date: '2026-09-16',
+      patchVersion: 'Patch 2.2.16a',
+      date: '2026-10-14',
       type: 'adjustment',
-      title: 'Unverified Passive Basic Attack Stasis Claim',
-      affectedSkillOrAttribute: 'Passive (Spell Curse)',
-      previousValue: 'Unsubstantiated claim of multiple enhanced basic attack charges queuing during stasis',
-      newValue: 'Unsubstantiated claim of standardized consumption on next basic attack post-freeze',
-      summary: 'Unverified patch change claim regarding passive basic attack stasis interaction; not corroborated by cited Moonton or Liquipedia Patch 2.2.16 notes.',
+      title: 'Unverified Patch 2.2.16a Adjustment Listing',
+      affectedSkillOrAttribute: 'Unspecified (Listed under ADJ on MLBBHub)',
+      previousValue: 'Missing from source (no baseline numerical or skill value published on MLBBHub 2.2.16a entry)',
+      newValue: 'Missing from source (no adjusted numerical or skill value published on MLBBHub 2.2.16a entry)',
+      summary: 'Listed under ADJ (Adjusted) in MLBBHub Patch 2.2.16a notes, but specific skill, attribute, and numerical details are missing from the source.',
       details: [
-        'Unverified: Cited official Moonton Patch 2.2.16 documentation (article 3503357) and Liquipedia Patch 2.2.16 archive do not establish a live basic-attack or Spell Curse stasis adjustment for Khufra.',
-        'While secondary reference MLBBHub notes Khufra under adjusted heroes in 2.2.16a, exact adjustment details have not been officially documented or verified.',
-        'Retained as unverified historical record for transparency; not counted as verified balance history.'
+        'MLBBHub lists Khufra under "ADJ" (Adjusted) for Original Server Patch 2.2.16a (release date 2026-10-14).',
+        'Inspection of the MLBBHub Patch 2.2.16a entry confirms that no specific skill, attribute, previous value, or new value is detailed for Khufra.',
+        'Moonton official release and Liquipedia patch archives restrict detailed adjustments in Patch 2.2.16a to Kalea, Aulus, Hirara, Eudora, and Rafaela.',
+        'Retained as an unverified record per instructions to prevent inventing missing values or descriptions.'
       ],
-      sourceName: 'Liquipedia MLBB Patch Archive (Secondary Source)',
-      sourceUrl: 'https://liquipedia.net/mobilelegends/Patch_2.2.16',
+      sourceName: 'MLBBHub Patch Archive (Secondary Source)',
+      sourceUrl: 'https://mlbbhub.com/patch-notes/original/2.2.16a',
       sourceType: 'secondary',
       verificationStatus: 'unverified',
       serverType: 'original'
