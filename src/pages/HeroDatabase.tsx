@@ -458,9 +458,9 @@ export const HeroDatabase: React.FC = () => {
                           <span>Partially Verified</span>
                           <span className="text-[10px] text-amber-400/80 block font-normal">
                             {selectedHero.verification?.currentPatchVerificationStatus === 'verified_changed'
-                              ? 'Active Patch 2.2.16a Tuning Verified'
+                              ? `Active ${CURRENT_ORIGINAL_SERVER_PATCH} Tuning Verified`
                               : selectedHero.verification?.currentPatchVerificationStatus === 'confirmed_unchanged'
-                              ? 'Patch 2.2.16a Confirmed Unchanged'
+                              ? `${CURRENT_ORIGINAL_SERVER_PATCH} Confirmed Unchanged`
                               : 'Historical Balance Records Verified'}
                           </span>
                         </div>
@@ -540,7 +540,7 @@ export const HeroDatabase: React.FC = () => {
                         </span>
                       </div>
                       <div className="p-1.5 rounded bg-zinc-900/60 border border-zinc-850 flex items-center justify-between">
-                        <span className="text-zinc-500 text-[10px]">Patch 2.2.16a:</span>
+                        <span className="text-zinc-500 text-[10px]">{CURRENT_ORIGINAL_SERVER_PATCH}:</span>
                         <span className={
                           selectedHero.verification?.currentPatchVerificationStatus === 'verified_changed'
                             ? 'text-sky-400 font-semibold'
@@ -947,9 +947,9 @@ export const HeroDatabase: React.FC = () => {
                             : selectedTier === 'partially_verified'
                             ? `Partially Verified (${
                                 selectedHero.verification?.currentPatchVerificationStatus === 'verified_changed'
-                                  ? 'Active Patch 2.2.16a Tuning'
+                                  ? `Active ${CURRENT_ORIGINAL_SERVER_PATCH} Tuning`
                                   : selectedHero.verification?.currentPatchVerificationStatus === 'confirmed_unchanged'
-                                  ? 'Patch 2.2.16a Confirmed Unchanged'
+                                  ? `${CURRENT_ORIGINAL_SERVER_PATCH} Confirmed Unchanged`
                                   : 'Historical Patch Records'
                               })`
                             : 'Unverified Reference Baseline (Pending Patch Audit)'}
@@ -1011,7 +1011,7 @@ export const HeroDatabase: React.FC = () => {
                         </span>
                       </div>
                       <div className="p-1.5 rounded bg-zinc-900/60 border border-zinc-800/80">
-                        <span className="text-zinc-500 block uppercase text-[9px]">Patch 2.2.16a:</span>
+                        <span className="text-zinc-500 block uppercase text-[9px]">{CURRENT_ORIGINAL_SERVER_PATCH}:</span>
                         <span className={
                           selectedHero.verification?.currentPatchVerificationStatus === 'verified_changed'
                             ? 'text-sky-400 font-semibold'

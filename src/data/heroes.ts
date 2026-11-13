@@ -2438,7 +2438,7 @@ export const HEROES: Hero[] = RAW_HEROES.map((h) => {
       ? 'verified'
       : (mechanicsEvidence?.verificationStatus || mechanicsEvidence?.status || 'community_reference');
 
-  // Category 4: Current Patch Status (Patch 2.2.16a) - Structured Evidence Only
+  // Category 4: Current Patch Status (Current Original Server Patch) - Structured Evidence Only
   const currentPatchAudit: CurrentPatchAuditRecord | undefined = getCurrentPatchAuditRecord(h.id);
   const hasActivePatchChangeRecord = patchHistory.some(
     (p) => p.patchVersion === CURRENT_ORIGINAL_SERVER_PATCH && p.verificationStatus === 'verified'
@@ -2637,11 +2637,11 @@ export const HEROES: Hero[] = RAW_HEROES.map((h) => {
   // Detailed Evidence Notes:
   let evidenceNotes = '';
   if (currentPatchVerificationStatus === 'verified_changed') {
-    evidenceNotes = `Active Patch 2.2.16a balance tuning verified (${sourceType} sources). Ability kit descriptions remain in-game reference baseline pending official kit documentation.`;
+    evidenceNotes = `Active ${CURRENT_ORIGINAL_SERVER_PATCH} balance tuning verified (${sourceType} sources). Ability kit descriptions remain in-game reference baseline pending official kit documentation.`;
   } else if (currentPatchVerificationStatus === 'confirmed_unchanged') {
-    evidenceNotes = `Audited against Patch 2.2.16a hotfix (${currentPatchAudit?.sourceName || 'Secondary Archive'}): confirmed absence of direct live stat adjustments. Ability kit descriptions remain in-game reference baseline.`;
+    evidenceNotes = `Audited against ${CURRENT_ORIGINAL_SERVER_PATCH} (${currentPatchAudit?.sourceName || 'Secondary Archive'}): confirmed absence of direct live stat adjustments. Ability kit descriptions remain in-game reference baseline.`;
   } else if (patchHistoryVerificationStatus === 'verified') {
-    evidenceNotes = `Historical patch records verified (${patchHistory.length} record(s), ${sourceType} sources). Current Patch 2.2.16a status unreviewed; core kit remains reference baseline.`;
+    evidenceNotes = `Historical patch records verified (${patchHistory.length} record(s), ${sourceType} sources). Current ${CURRENT_ORIGINAL_SERVER_PATCH} status unreviewed; core kit remains reference baseline.`;
   } else {
     evidenceNotes = 'Core mechanics and ability descriptions reflect in-game baseline. No documented patch records verified.';
   }

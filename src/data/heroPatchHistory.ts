@@ -14,6 +14,182 @@ export const OFFICIAL_PATCH_ARCHIVE_URL = CURRENT_PATCH_CONFIG.archiveSourceUrl;
  */
 export const HERO_PATCH_HISTORY: Record<string, HeroPatchChange[]> = {
   // ==========================================
+  // PATCH 2.2.23 (November 11, 2026) - Hero Revamp & Meta Realignment
+  // ==========================================
+  'popol-and-kupa': [
+    {
+      id: 'popol-and-kupa-2.2.23',
+      heroId: 'popol-and-kupa',
+      heroName: 'Popol and Kupa',
+      patchVersion: 'Patch 2.2.23',
+      date: '2026-11-11',
+      type: 'rework',
+      title: 'Icefield Companions Hero Rework',
+      affectedSkillOrAttribute: 'Complete Hero Kit (Passive, Skill 1, Skill 2, Skill 3, Ultimate)',
+      previousValue: 'Pre-revamp kit with limited mobility, static Kupa downtime after defeat, and 12s Enraged Ultimate',
+      newValue: 'Level-scaling Kupa with out-of-combat regen & prayer revival, Skill 2 riding mechanic, and 9s Alpha Wolf Ultimate',
+      summary: 'Comprehensive hero rework improving mobility, coordinated combos, and Kupa uptime. Kupa now scales with Popol’s level and recovers HP out of combat, Popol can ride Kupa via Skill 2, and Ultimate enters Enraged Alpha Wolf Form for 9s.',
+      details: [
+        "Passive (We Are Friends): Kupa's HP scales with Popol's level, and it inherits Popol's other attributes and equipment effects. Kupa continuously recovers HP while out of combat. If Kupa falls, Popol can pray to bring Kupa back to the battlefield. Kupa deals extra True Damage to creeps.",
+        "Skill 1 (Bite 'em, Kupa!): Popol throws a spear at the target enemy, dealing damage, and commands Kupa to lunge at the target and bite them, greatly slowing them. In Alpha Wolf Form, Kupa strikes the target area, knocking nearby enemies airborne and dealing increased damage.",
+        'Skill 2 (Kupa, Help!): Popol calls Kupa back to his side, gaining a shield. He can then ride Kupa to move rapidly, during which Kupa continuously recovers HP. In Alpha Wolf Form, Popol gains a stronger shield, and Kupa recovers to full HP while mounted.',
+        "Skill 3 (Popol's Surprise): Popol sets a trap at the target location that briefly immobilizes the enemy who steps on it. It then explodes and creates a frost zone that slows enemies within.",
+        'Ultimate (We Are Angry!): Popol and Kupa enter the Enraged state for 9s. Kupa immediately recovers to full HP and transforms into Alpha Wolf Form, gaining extra Max HP and enhancing his other skills.'
+      ],
+      sourceName: 'MLBBHub Patch Archive (Secondary Source)',
+      sourceUrl: 'https://mlbbhub.com/patch-notes/original/2.2.23',
+      sourceType: 'secondary',
+      verificationStatus: 'verified',
+      serverType: 'original'
+    }
+  ],
+  xavier: [
+    {
+      id: 'xavier-2.2.23',
+      heroId: 'xavier',
+      heroName: 'Xavier',
+      patchVersion: 'Patch 2.2.23',
+      date: '2026-11-11',
+      type: 'buff',
+      title: 'Mystic Field AoE Shift & Skill Feel Optimization',
+      affectedSkillOrAttribute: 'Passive, Skill 1, Skill 2 (Mystic Field)',
+      previousValue: 'Passive MS Bonus: 50%; Mystic Field Damage: 220–345 (+65% Total Magic Power); Mystic Barrier dealt direct damage',
+      newValue: 'Passive MS Bonus: 60% (slower decay); Mystic Field Damage: 440–690 (+130% Total Magic Power); Skill 1 & 2 backswing -50%',
+      summary: 'Shifted Skill 2 (Mystic Barrier) damage into the activation of Mystic Field to increase AOE teamfight damage, reduced Skill 1 and Skill 2 backswing times by 50%, and boosted Passive movement speed.',
+      details: [
+        'Passive (Movement Speed Bonus): Increased from 50% to 60%, and the bonus now decays more slowly.',
+        'Skill 1: Reduced backswing time by 50%.',
+        "Skill 2: Reduced backswing time by 50%. Removed Mystic Barrier's direct damage.",
+        'Skill 2 (Mystic Field Damage): Increased from 220–345 (+65% Total Magic Power) to 440–690 (+130% Total Magic Power).',
+        "Skill 2 Bug Fix: Fixed an issue where Mystic Field Damage could not trigger the passive's Movement Speed bonus."
+      ],
+      sourceName: 'MLBBHub Patch Archive (Secondary Source)',
+      sourceUrl: 'https://mlbbhub.com/patch-notes/original/2.2.23',
+      sourceType: 'secondary',
+      verificationStatus: 'verified',
+      serverType: 'original'
+    }
+  ],
+  aldous: [
+    {
+      id: 'aldous-2.2.23',
+      heroId: 'aldous',
+      heroName: 'Aldous',
+      patchVersion: 'Patch 2.2.23',
+      date: '2026-11-11',
+      type: 'buff',
+      title: 'Contract: Explosion Cooldown & Late-Game Damage Reduction Buff',
+      affectedSkillOrAttribute: 'Skill 2 (Contract: Explosion)',
+      previousValue: 'Cooldown: 12–9.5s; Damage Reduction: 30% at all levels',
+      newValue: 'Cooldown: 8s at all levels; Damage Reduction: 30%–55%',
+      summary: "Reduced Aldous's downtime between trades during the laning phase and increased his late-game Damage Reduction.",
+      details: [
+        'Skill 2 (Contract: Explosion) Cooldown: Reduced from 12–9.5s to 8s at all levels.',
+        'Skill 2 Damage Reduction: Increased from 30% at all levels to 30%–55%.'
+      ],
+      sourceName: 'MLBBHub Patch Archive (Secondary Source)',
+      sourceUrl: 'https://mlbbhub.com/patch-notes/original/2.2.23',
+      sourceType: 'secondary',
+      verificationStatus: 'verified',
+      serverType: 'original'
+    }
+  ],
+  atlas: [
+    {
+      id: 'atlas-2.2.23',
+      heroId: 'atlas',
+      heroName: 'Atlas',
+      patchVersion: 'Patch 2.2.23',
+      date: '2026-11-11',
+      type: 'nerf',
+      title: 'Frigid Breath Freeze Frequency Nerf & Defense Compensation',
+      affectedSkillOrAttribute: 'Passive (Frigid Breath)',
+      previousValue: 'Frigid Breath Duration: 5s; Freeze Cooldown: 2.5s; Defense gained: 20 (+0.5% Extra HP)',
+      newValue: 'Frigid Breath Duration: 4s; Freeze Cooldown: 4s; Defense gained: 20 (+0.7% Extra HP)',
+      summary: "Shortened Frigid Breath's duration and increased the freeze cooldown because Atlas's Passive was freezing enemies too often, while increasing Physical and Magic Defense bonuses to help him withstand damage after engaging.",
+      details: [
+        'Passive (Frigid Breath Duration): Reduced from 5s to 4s.',
+        'Passive (Freeze Cooldown): Increased from 2.5s to 4s.',
+        'Passive (Physical & Magic Defense gained during Frigid Breath): Increased from 20 (+0.5% Extra HP) to 20 (+0.7% Extra HP).'
+      ],
+      sourceName: 'MLBBHub Patch Archive (Secondary Source)',
+      sourceUrl: 'https://mlbbhub.com/patch-notes/original/2.2.23',
+      sourceType: 'secondary',
+      verificationStatus: 'verified',
+      serverType: 'original'
+    }
+  ],
+  melissa: [
+    {
+      id: 'melissa-2.2.23',
+      heroId: 'melissa',
+      heroName: 'Melissa',
+      patchVersion: 'Patch 2.2.23',
+      date: '2026-11-11',
+      type: 'buff',
+      title: 'Muddles Damage Transfer Ratio Scaling Buff',
+      affectedSkillOrAttribute: 'Skill 2 (Eyes on You!)',
+      previousValue: 'Damage Transfer & Attack Effect Inheritance: flat 52%',
+      newValue: 'Damage Transfer & Attack Effect Inheritance: 50%–60%',
+      summary: 'Partially rolled back previous damage nerfs to restore late-game teamfight damage transfer on Muddles.',
+      details: [
+        "Skill 2 (Eyes on You!) Muddles damage transfer and attack effect inheritance ratio adjusted from flat 52% to 50%–60% scaling with level."
+      ],
+      sourceName: 'MLBBHub Patch Archive (Secondary Source)',
+      sourceUrl: 'https://mlbbhub.com/patch-notes/original/2.2.23',
+      sourceType: 'secondary',
+      verificationStatus: 'verified',
+      serverType: 'original'
+    }
+  ],
+  uranus: [
+    {
+      id: 'uranus-2.2.23',
+      heroId: 'uranus',
+      heroName: 'Uranus',
+      patchVersion: 'Patch 2.2.23',
+      date: '2026-11-11',
+      type: 'adjustment',
+      title: 'Basic Attack Splash Damage Type Conversion',
+      affectedSkillOrAttribute: 'Basic Attack',
+      previousValue: 'Splash damage dealt as Physical Damage',
+      newValue: 'Splash damage converted to Magic Damage',
+      summary: 'Changed Uranus Basic Attack splash damage type to Magic Damage to align with his magic damage profile.',
+      details: [
+        'Basic Attack splash damage converted from physical to Magic Damage.'
+      ],
+      sourceName: 'MLBBHub Patch Archive (Secondary Source)',
+      sourceUrl: 'https://mlbbhub.com/patch-notes/original/2.2.23',
+      sourceType: 'secondary',
+      verificationStatus: 'verified',
+      serverType: 'original'
+    }
+  ],
+  kagura: [
+    {
+      id: 'kagura-2.2.23',
+      heroId: 'kagura',
+      heroName: 'Kagura',
+      patchVersion: 'Patch 2.2.23',
+      date: '2026-11-11',
+      type: 'adjustment',
+      title: 'Seimei Umbrella Range Indicator Optimization',
+      affectedSkillOrAttribute: 'Passive / Seimei Umbrella Tether',
+      previousValue: 'Standard range tether visual feedback',
+      newValue: 'Enhanced visual indicator for maximum umbrella separation distance',
+      summary: 'Optimized the visual range indicator indicating maximum tether separation distance between Kagura and her Seimei Umbrella.',
+      details: [
+        'Optimized visual indicator for maximum separation distance between Seimei Umbrella and Kagura before automatic recall.'
+      ],
+      sourceName: 'MLBBHub Patch Archive (Secondary Source)',
+      sourceUrl: 'https://mlbbhub.com/patch-notes/original/2.2.23',
+      sourceType: 'secondary',
+      verificationStatus: 'verified',
+      serverType: 'original'
+    }
+  ],
+
+  // ==========================================
   // PATCH 2.2.16a (October 14, 2026) - Balance Hotfix
   // ==========================================
   aulus: [
@@ -257,6 +433,34 @@ export const HERO_PATCH_HISTORY: Record<string, HeroPatchChange[]> = {
   // ==========================================
   masha: [
     {
+      id: 'masha-2.2.23',
+      heroId: 'masha',
+      heroName: 'Masha',
+      patchVersion: 'Patch 2.2.23',
+      date: '2026-11-11',
+      type: 'nerf',
+      title: 'Slow Relocation to Skill 2, Path Width Narrowing & Claw Strike Nerf',
+      affectedSkillOrAttribute: 'Passive (Primal Pact), Skill 1 (Feral Swipe), Skill 2 (Claw Strike)',
+      previousValue: 'Passive extra damage: (3 + 1% Extra Physical Attack + 0.3 * Hero Level)% Max HP, HP Regen: 4–10% Max HP; Skill 1 Damage Bonus: 70%, Minion Damage: 100%–150%, 50% slow (1s); Skill 2 Damage: 120–240 (+80% Extra Physical Attack), standard dash path',
+      newValue: 'Passive extra damage: (2 + 0.5% Extra Physical Attack + 0.2 * Hero Level)% Max HP, HP Regen: 3–6% Max HP; Skill 1 Damage Bonus: 55%, Minion Damage: 150%–200%, slow removed; Skill 2 Damage: 60–240 (+40% Extra Physical Attack), 50% slow (1s) added, path width -20%',
+      summary: "Moved the 50% slow effect from Skill 1 to Skill 2 to improve lane clear and follow-up chases, narrowed Skill 2's dash path by 20%, reduced Skill 1 and Skill 2 damage, optimized Wound triggering, and slightly reduced claw strike effectiveness.",
+      details: [
+        "Passive (Primal Pact) Wound Trigger Optimization: Skill hits randomly replace one of the target's existing Wounds with a new one in the direction of the hit.",
+        'Passive Extra Physical Damage: Reduced from (3 + 1% Extra Physical Attack + 0.3 * Hero Level)% Max HP to (2 + 0.5% Extra Physical Attack + 0.2 * Hero Level)% Max HP.',
+        'Passive HP Regen: Reduced from 4–10% Max HP to 3–6% Max HP.',
+        'Skill 1 (Feral Swipe) Damage Bonus: Reduced from 70% to 55%; Damage to Minions increased from 100%–150% to 150%–200%.',
+        'Skill 1 Removed Effect: Removed the effect where hitting an enemy hero slowed them by 50% for 1s.',
+        'Skill 2 (Claw Strike) Relocated Slow & Narrowed Path: Hitting an enemy hero with the slash now slows them by 50% for 1s; Skill 2 path width reduced by 20% to reduce unwanted collision blocks.',
+        'Skill 2 Damage: Reduced from 120–240 (+80% Extra Physical Attack) to 60–240 (+40% Extra Physical Attack).',
+        "Claw Strikes: Slightly reduced the effectiveness of Masha's claw strikes (exact separate claw strike multiplier not itemized beyond the Passive/Skill values above)."
+      ],
+      sourceName: 'MLBBHub Patch Archive (Secondary Source)',
+      sourceUrl: 'https://mlbbhub.com/patch-notes/original/2.2.23',
+      sourceType: 'secondary',
+      verificationStatus: 'verified',
+      serverType: 'original'
+    },
+    {
       id: 'masha-2.2.16',
       heroId: 'masha',
       heroName: 'Masha',
@@ -491,6 +695,31 @@ export const HERO_PATCH_HISTORY: Record<string, HeroPatchChange[]> = {
   ],
   karrie: [
     {
+      id: 'karrie-2.2.23',
+      heroId: 'karrie',
+      heroName: 'Karrie',
+      patchVersion: 'Patch 2.2.23',
+      date: '2026-11-11',
+      type: 'adjustment',
+      title: 'Ultimate Lightwheel Combat Buff & Skill 1 Damage Scaling Shift',
+      affectedSkillOrAttribute: 'Skill 1 (Spinning Lightwheel), Skill 2 (Phantom Step), Ultimate (Speedy Lightwheel)',
+      previousValue: 'Skill 1 Physical Attack Bonus: 90% (Base) / 20% (Sustained); Ultimate Base Damage per Lightwheel: 40; Movement Speed Boost: 20%',
+      newValue: 'Skill 1 Physical Attack Bonus: 20% (Base) / 10% (Sustained); Ultimate Base Damage per Lightwheel: 50; Movement Speed Boost: 30%',
+      summary: 'Improved Karrie’s combat ability during her Ultimate, shifted Skill 1 toward slowing and forcing repositioning in the late game, and improved Skill 1 clarity and Skill 2 target detection.',
+      details: [
+        'Skill 1 (Spinning Lightwheel): Optimized the sphere visual effects and collision detection frequency for clearer hit readability.',
+        'Skill 1 Physical Attack Bonus: Base Damage reduced from 90% to 20%; Sustained Damage reduced from 20% to 10%.',
+        'Skill 2 (Phantom Step): Now detects nearby enemy heroes throughout the dash; if no enemy heroes are detected, it detects creeps and minions at the end of the dash.',
+        'Ultimate (Speedy Lightwheel) Base Damage per Lightwheel: Increased from 40 to 50.',
+        'Ultimate Movement Speed Boost: Increased from 20% to 30%.'
+      ],
+      sourceName: 'MLBBHub Patch Archive (Secondary Source)',
+      sourceUrl: 'https://mlbbhub.com/patch-notes/original/2.2.23',
+      sourceType: 'secondary',
+      verificationStatus: 'verified',
+      serverType: 'original'
+    },
+    {
       id: 'karrie-1.9.42b',
       heroId: 'karrie',
       heroName: 'Karrie',
@@ -558,6 +787,31 @@ export const HERO_PATCH_HISTORY: Record<string, HeroPatchChange[]> = {
     }
   ],
   lukas: [
+    {
+      id: 'lukas-2.2.23',
+      heroId: 'lukas',
+      heroName: 'Lukas',
+      patchVersion: 'Patch 2.2.23',
+      date: '2026-11-11',
+      type: 'adjustment',
+      title: 'Base Durability & Skill 1 Base-Damage Shift for Fighter Viability',
+      affectedSkillOrAttribute: 'Base Attributes & Skill 1',
+      previousValue: 'Base HP: 2550; Base Physical Defense: 21; Skill 1 Pulverize: 280–580 (+120% Total Physical Attack), Spin: 80–180 (+45% Total Physical Attack), HP Regen: 6% Max HP',
+      newValue: 'Base HP: 2620; Base Physical Defense: 23; Skill 1 Pulverize: 400–800 (+60% Total Physical Attack), Spin: 95–235 (+25% Total Physical Attack), HP Regen: 8% Max HP',
+      summary: 'Increased base durability, Skill 1 base damage, and HP Regen while reducing Physical Attack scaling to make defensive builds more viable and encourage a fighter playstyle.',
+      details: [
+        'Base HP increased from 2550 to 2620.',
+        'Base Physical Defense increased from 21 to 23.',
+        'Skill 1 Pulverize Damage adjusted from 280–580 (+120% Total Physical Attack) to 400–800 (+60% Total Physical Attack).',
+        'Skill 1 Spin Damage adjusted from 80–180 (+45% Total Physical Attack) to 95–235 (+25% Total Physical Attack).',
+        'Skill 1 HP Regen increased from 6% of Max HP to 8% of Max HP.'
+      ],
+      sourceName: 'MLBBHub Patch Archive (Secondary Source)',
+      sourceUrl: 'https://mlbbhub.com/patch-notes/original/2.2.23',
+      sourceType: 'secondary',
+      verificationStatus: 'verified',
+      serverType: 'original'
+    },
     {
       id: 'lukas-1.9.42',
       heroId: 'lukas',
@@ -1140,6 +1394,29 @@ export const HERO_PATCH_HISTORY: Record<string, HeroPatchChange[]> = {
   ],
   gloo: [
     {
+      id: 'gloo-2.2.23',
+      heroId: 'gloo',
+      heroName: 'Gloo',
+      patchVersion: 'Patch 2.2.23',
+      date: '2026-11-11',
+      type: 'nerf',
+      title: 'Slam Immobilize, Explosion Damage & Ultimate Damage Transfer Nerf',
+      affectedSkillOrAttribute: 'Skill 1, Skill 3 (Ultimate)',
+      previousValue: 'Skill 1 Immobilizing Time: 0.8s; Explosion Damage: 250–400 (+12% Extra HP); Skill 3 Damage Transfer Ratio: 80%',
+      newValue: 'Skill 1 Immobilizing Time: 0.6s; Explosion Damage: 230–380 (+11% Extra HP); Skill 3 Damage Transfer Ratio: 60%',
+      summary: 'Toned down Gloo’s control duration, Skill 1 explosion damage, and Ultimate damage transfer ratio to give opponents more counterplay.',
+      details: [
+        'Skill 1 Immobilizing Time reduced from 0.8s to 0.6s.',
+        'Skill 1 Explosion Damage reduced from 250–400 (+12% Extra HP) to 230–380 (+11% Extra HP).',
+        'Skill 3 (Ultimate) Damage Transfer Ratio reduced from 80% to 60%.'
+      ],
+      sourceName: 'MLBBHub Patch Archive (Secondary Source)',
+      sourceUrl: 'https://mlbbhub.com/patch-notes/original/2.2.23',
+      sourceType: 'secondary',
+      verificationStatus: 'verified',
+      serverType: 'original'
+    },
+    {
       id: 'gloo-1.9.68',
       heroId: 'gloo',
       heroName: 'Gloo',
@@ -1258,6 +1535,31 @@ export const HERO_PATCH_HISTORY: Record<string, HeroPatchChange[]> = {
     }
   ],
   lunox: [
+    {
+      id: 'lunox-2.2.23',
+      heroId: 'lunox',
+      heroName: 'Lunox',
+      patchVersion: 'Patch 2.2.23',
+      date: '2026-11-11',
+      type: 'buff',
+      title: 'Passive Order/Chaos Immediate Bonus & Early-Game Chaos Buff',
+      affectedSkillOrAttribute: 'Passive (Dreamland Twist), Skill 2 (Power of Chaos), Ultimate (Power of Chaos)',
+      previousValue: 'Skill 2 Extra % Damage: 2.5%–5% (1.5%–3% to creeps); Ultimate (Chaos) Damage: 250–450 (+100% Total Magic Power)',
+      newValue: 'Passive grants 10% Spell Vamp (Order) or 10% Magic PEN (Chaos); Skill 2 Extra % Damage: 3.5%–5% (2.1%–3% to creeps); Ultimate (Chaos) foreswing -50%, Damage: 150–300 (+135% Total Magic Power)',
+      summary: 'Adjusted Lunox’s Passive to provide immediate early-to-mid game Spell Vamp or Magic Penetration, boosted early Skill 2 % HP damage, and tuned Ultimate (Power of Chaos) dash responsiveness and scaling.',
+      details: [
+        'Passive: When balance is shifted to the Power of Order, immediately gain 10% Spell Vamp; when shifted to the Power of Chaos, immediately gain 10% Magic Penetration.',
+        'Skill 2 (Power of Chaos) Extra Percentage Damage increased from 2.5%–5% to 3.5%–5%.',
+        'Skill 2 (Power of Chaos) Percentage of Extra Damage to Creeps increased from 1.5%–3% to 2.1%–3%.',
+        "Ultimate (Power of Chaos): Reduced the dash's foreswing time by 50%.",
+        'Ultimate (Power of Chaos) Damage adjusted from 250–450 (+100% Total Magic Power) to 150–300 (+135% Total Magic Power).'
+      ],
+      sourceName: 'MLBBHub Patch Archive (Secondary Source)',
+      sourceUrl: 'https://mlbbhub.com/patch-notes/original/2.2.23',
+      sourceType: 'secondary',
+      verificationStatus: 'verified',
+      serverType: 'original'
+    },
     {
       id: 'lunox-1.8.44',
       heroId: 'lunox',
@@ -1471,6 +1773,31 @@ export const HERO_PATCH_HISTORY: Record<string, HeroPatchChange[]> = {
   ],
   freya: [
     {
+      id: 'freya-2.2.23',
+      heroId: 'freya',
+      heroName: 'Freya',
+      patchVersion: 'Patch 2.2.23',
+      date: '2026-11-11',
+      type: 'buff',
+      title: 'Passive Sacred Orb Sustain & Ultimate Power Rebalancing',
+      affectedSkillOrAttribute: 'Passive (Power of Einherjar), Ultimate (Valkyrie Descent)',
+      previousValue: 'Passive: no Sacred Orb HP recovery; Ultimate Cooldown: 44–28s; Basic Attack regen during Ult; Enhanced Basic Attack Damage: 30–60 (+100% Total Physical Attack)',
+      newValue: 'Passive: Sacred Orb consumption recovers 20 (+3 * Hero Level) (+20% Total Physical Attack) HP; Ultimate Cooldown: 60–44s, +30 Movement Speed, Enhanced Basic Attack Damage: 100–200 (+70% Total Physical Attack)',
+      summary: 'Strengthened Freya’s non-Ultimate EXP Lane sustain via Passive HP recovery on Sacred Orb consumption while increasing Ultimate cooldown and shifting Ultimate Basic Attack damage.',
+      details: [
+        'Passive (Power of Einherjar): Consuming a Sacred Orb causes the next Basic Attack to recover 20 (+3 * Hero Level) (+20% Total Physical Attack) HP.',
+        'Ultimate (Valkyrie Descent) Cooldown: Increased from 44–28s to 60–44s.',
+        'Ultimate: Removed the HP Regen effect from Basic Attacks during the Ultimate.',
+        'Ultimate Damage of Enhanced Basic Attack: Adjusted from 30–60 (+100% Total Physical Attack) to 100–200 (+70% Total Physical Attack).',
+        'Ultimate New Effect: Gains 30 Movement Speed while the Ultimate is active.'
+      ],
+      sourceName: 'MLBBHub Patch Archive (Secondary Source)',
+      sourceUrl: 'https://mlbbhub.com/patch-notes/original/2.2.23',
+      sourceType: 'secondary',
+      verificationStatus: 'verified',
+      serverType: 'original'
+    },
+    {
       id: 'freya-2.1.30',
       heroId: 'freya',
       heroName: 'Freya',
@@ -1493,6 +1820,31 @@ export const HERO_PATCH_HISTORY: Record<string, HeroPatchChange[]> = {
     }
   ],
   kaja: [
+    {
+      id: 'kaja-2.2.23',
+      heroId: 'kaja',
+      heroName: 'Kaja',
+      patchVersion: 'Patch 2.2.23',
+      date: '2026-11-11',
+      type: 'buff',
+      title: 'Soaring Mobility Extensions & Control-Immunity-Proof Ultimate Area',
+      affectedSkillOrAttribute: 'Skill 2 (Soaring Wings), Ultimate (Divine Binding)',
+      previousValue: 'Skill 2 Soaring state had slower turning and no duration extension on Basic Attacks/minion hits; Control Immunity could escape Ultimate area',
+      newValue: 'Improved Soaring turning speed & duration extension on enhanced Basic Attacks and Skill 2 minion hits; slight Ultimate delay increase; Control Immunity cannot escape Ultimate area',
+      summary: 'Added ways for Kaja to extend his Soaring state and improved turning speed while Soaring, while adjusting Ultimate counterplay by slightly increasing delay and preventing Control Immunity escapes once triggered.',
+      details: [
+        "Skill 2: Increased Kaja's turning speed while Soaring for more responsive controls.",
+        "Skill 2 New Effect: While Soaring, enhanced Basic Attacks extend the state's duration slightly when they hit enemies.",
+        "Skill 2 New Effect: While Soaring, hitting enemy minions with Skill 2 now also extends the state's duration.",
+        "Ultimate: Slightly increased the Ultimate's delay.",
+        "Ultimate New Effect: Targets with Control Immunity can no longer escape the Ultimate's area when it takes effect."
+      ],
+      sourceName: 'MLBBHub Patch Archive (Secondary Source)',
+      sourceUrl: 'https://mlbbhub.com/patch-notes/original/2.2.23',
+      sourceType: 'secondary',
+      verificationStatus: 'verified',
+      serverType: 'original'
+    },
     {
       id: 'kaja-1.9.90',
       heroId: 'kaja',

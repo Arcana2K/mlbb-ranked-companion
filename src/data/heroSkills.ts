@@ -1988,7 +1988,7 @@ export const HERO_SKILLS_DATA: Record<string, HeroSkillRecord> = {
           "Attack Speed",
           "Sacred Orbs"
         ],
-        "description": "Gains massive attack speed on basic attacks after skill casts and generates Sacred Orbs to empower skills."
+        "description": "Gains massive attack speed on basic attacks after skill casts and generates Sacred Orbs to empower skills. Consuming a Sacred Orb causes her next Basic Attack to recover 20 (+3 * Hero Level) (+20% Total Physical Attack) HP."
       },
       {
         "id": "skill1",
@@ -2023,8 +2023,8 @@ export const HERO_SKILLS_DATA: Record<string, HeroSkillRecord> = {
           "Shield",
           "Valkyrie Form"
         ],
-        "cooldown": "46.0s",
-        "description": "Enters Valkyrie State instantly, gaining maximum Sacred Orbs, a colossal shield, and splash basic attacks."
+        "cooldown": "60.0s",
+        "description": "Enters Valkyrie State instantly, gaining Control Immunity, 30 Movement Speed, maximum Sacred Orbs, a colossal shield, and splash basic attacks (100–200 + 70% Total Physical Attack)."
       }
     ]
   },
@@ -2509,9 +2509,9 @@ export const HERO_SKILLS_DATA: Record<string, HeroSkillRecord> = {
           "Speed Boost",
           "Stun"
         ],
-        "cooldown": "12.0s",
+        "cooldown": "8.0s",
         "energyCost": "60 Mana",
-        "description": "Gains 30% damage reduction and 20% speed; explodes after 2 seconds to stun surrounding enemies."
+        "description": "Gains 30%–55% damage reduction and 20% speed; explodes after 2 seconds to stun surrounding enemies."
       },
       {
         "id": "ultimate",
@@ -2922,7 +2922,7 @@ export const HERO_SKILLS_DATA: Record<string, HeroSkillRecord> = {
           "Feral State",
           "Purify"
         ],
-        "description": "Possesses 3 distinct HP bars, clearing control effects and blocking lethal damage upon losing a bar. Dealing damage charges Feral energy. Striking targets from their directional Wound angle triggers Feral State, granting Resilience, Attack Speed, Movement Speed, and enhanced wide-range claw strikes that restore HP."
+        "description": "Possesses 3 distinct HP bars, clearing control effects and blocking lethal damage upon losing a bar. Dealing damage charges Feral energy. Skill hits replace an existing Wound with a new one in the direction of the hit; breaking a Wound triggers Feral State, granting Resilience, Attack Speed, Movement Speed, and enhanced wide-range claw strikes that restore HP."
       },
       {
         "id": "skill1",
@@ -2930,10 +2930,10 @@ export const HERO_SKILLS_DATA: Record<string, HeroSkillRecord> = {
         "type": "Skill 1",
         "tags": [
           "AoE",
-          "Slow"
+          "Damage"
         ],
         "cooldown": "6.0s",
-        "description": "Releases an energy surge forward, dealing Physical Damage to enemies in her path and slowing enemy heroes hit."
+        "description": "Releases an energy surge forward, dealing Physical Damage to enemies in her path with increased damage to minions."
       },
       {
         "id": "skill2",
@@ -2941,10 +2941,11 @@ export const HERO_SKILLS_DATA: Record<string, HeroSkillRecord> = {
         "type": "Skill 2",
         "tags": [
           "Blink",
-          "Mobility"
+          "Mobility",
+          "Slow"
         ],
         "cooldown": "8.0s",
-        "description": "Dashes in a target direction, unleashing a wide-range claw strike upon reaching max range or colliding with a non-minion enemy. Cooldown resets automatically whenever an HP bar is lost."
+        "description": "Dashes in a target direction with a narrowed path, unleashing a wide-range claw strike upon reaching max range or colliding with a non-minion enemy, slowing enemies hit. Cooldown resets automatically whenever an HP bar is lost."
       },
       {
         "id": "ultimate",
@@ -4713,7 +4714,7 @@ export const HERO_SKILLS_DATA: Record<string, HeroSkillRecord> = {
           "Skill Evolution",
           "Transcendence State"
         ],
-        "description": "Hitting enemies enhances his skills across 3 stages, expanding skill widths and entering Transcendence for 5s."
+        "description": "Hitting enemies with skills grants up to 60% decaying Movement Speed and enhances his skills across 3 stages, expanding skill widths and entering Transcendence for 5s."
       },
       {
         "id": "skill1",
@@ -4737,7 +4738,7 @@ export const HERO_SKILLS_DATA: Record<string, HeroSkillRecord> = {
         ],
         "cooldown": "12.0s",
         "energyCost": "70 Mana",
-        "description": "Creates a mystic barrier that speeds up allies; hitting it with Infinite Extension expands it into an immobilizing field."
+        "description": "Creates a mystic barrier that speeds up allies; hitting it with other skills activates and expands Mystic Field to immobilize enemies and deal 440–690 (+130% Total Magic Power) AoE magic damage."
       },
       {
         "id": "ultimate",
@@ -5024,10 +5025,10 @@ export const HERO_SKILLS_DATA: Record<string, HeroSkillRecord> = {
         "name": "Dreamland Twist",
         "type": "Passive",
         "tags": [
-          "Conversion",
-          "Penetration/Defense"
+          "Spell Vamp",
+          "Magic Penetration"
         ],
-        "description": "Does not benefit from cooldown reduction; converts CDR into magic penetration (Chaos) or magic defense (Order)."
+        "description": "When balance is shifted to the Power of Order, immediately gains 10% Spell Vamp; when shifted to the Power of Chaos, immediately gains 10% Magic Penetration."
       },
       {
         "id": "skill1",
@@ -5052,7 +5053,7 @@ export const HERO_SKILLS_DATA: Record<string, HeroSkillRecord> = {
         ],
         "cooldown": "2.0s",
         "energyCost": "50 Mana",
-        "description": "Unleashes chaos energy forward, dealing magic damage plus a massive percentage of the target's Max HP."
+        "description": "Unleashes chaos energy forward, dealing magic damage plus 3.5%–5% of the target's Max HP (2.1%–3% against creeps)."
       },
       {
         "id": "ultimate",
@@ -6759,7 +6760,7 @@ export const HERO_SKILLS_DATA: Record<string, HeroSkillRecord> = {
         ],
         "cooldown": "4.5s",
         "energyCost": "45 Mana",
-        "description": "Dashes in target direction and releases a lightwheel at the nearest enemy, applying Lightwheel Marks."
+        "description": "Dashes in target direction and detects nearby enemy heroes throughout the dash (or creeps and minions at the end if no heroes are detected) to release a lightwheel and apply Lightwheel Marks."
       },
       {
         "id": "ultimate",
@@ -6771,7 +6772,7 @@ export const HERO_SKILLS_DATA: Record<string, HeroSkillRecord> = {
         ],
         "cooldown": "30.0s",
         "energyCost": "100 Mana",
-        "description": "Enters dual-wielding mode for 6-10s, throwing two lightwheels with every basic attack and gaining 20% movement speed."
+        "description": "Enters dual-wielding mode for 6-10s, throwing two lightwheels with every basic attack and gaining 30% movement speed."
       }
     ]
   },
@@ -7354,6 +7355,7 @@ export const HERO_SKILLS_DATA: Record<string, HeroSkillRecord> = {
       "Airborne"
     ],
     "mobility": [
+      "Wolf Mount",
       "Wolf Companion Bodyguard"
     ],
     "damageCharacteristics": [
@@ -7369,31 +7371,33 @@ export const HERO_SKILLS_DATA: Record<string, HeroSkillRecord> = {
           "Wolf Companion",
           "Heal"
         ],
-        "description": "Popol fights alongside his frost wolf companion Kupa. Kupa inherits 120% HP and can be revived when defeated."
+        "description": "Popol fights alongside Kupa, whose Max HP scales with Popol's level (3500 + 350*Hero Level) and inherits 100% of Popol's attributes and equipment effects. Kupa regenerates 10% Max HP/s out of combat, deals extra True Damage to creeps, and can be revived via Popol's 3s Pray when defeated."
       },
       {
         "id": "skill1",
-        "name": "Bite 'Em, Kupa!",
+        "name": "Bite 'em, Kupa!",
         "type": "Skill 1",
         "tags": [
           "Target Bite",
-          "Stun"
+          "Slow",
+          "Airborne"
         ],
-        "cooldown": "6.5s",
+        "cooldown": "7.0s",
         "energyCost": "50 Mana",
-        "description": "Commands Kupa to bite the target, dealing physical damage and stunning them for 1s (in alpha form, attacks rapidly)."
+        "description": "Popol throws a spear dealing Physical Damage and commands Kupa to lunge and bite the target, slowing them by 99% for 0.75s while Basic Attacks on the marked target grant Attack and Movement Speed stacks. In Alpha Wolf Form, Kupa strikes nearby enemies, knocking them airborne for 0.5s with increased damage."
       },
       {
         "id": "skill2",
         "name": "Kupa, Help!",
         "type": "Skill 2",
         "tags": [
-          "Recall Shield",
-          "Airborne"
+          "Mount",
+          "Mobility",
+          "Shield"
         ],
         "cooldown": "10.0s",
-        "energyCost": "60 Mana",
-        "description": "Kupa rushes to protect Popol, granting Popol a shield and knocking up surrounding enemies."
+        "energyCost": "50 Mana",
+        "description": "Calls Kupa back to Popol, granting a shield and letting Popol ride Kupa for 1.5s (+250 Movement Speed) while Kupa continuously recovers 20% Max HP. In Alpha Wolf Form, the shield is stronger and Kupa recovers full HP while mounted."
       },
       {
         "id": "skill3",
@@ -7404,9 +7408,9 @@ export const HERO_SKILLS_DATA: Record<string, HeroSkillRecord> = {
           "Vision",
           "Immobilize"
         ],
-        "cooldown": "18.0s",
+        "cooldown": "1.5s",
         "energyCost": "50 Mana",
-        "description": "Lays frost traps that detonate on enemy contact, providing vision, freezing them for 1s, and creating a frost slow zone."
+        "description": "Sets a frost trap that briefly immobilizes the enemy stepping on it for 1s before exploding into a 4s frost zone that continuously slows enemies within by 20%."
       },
       {
         "id": "ultimate",
@@ -7418,8 +7422,8 @@ export const HERO_SKILLS_DATA: Record<string, HeroSkillRecord> = {
           "Attack Speed"
         ],
         "cooldown": "38.0s",
-        "energyCost": "120 Mana",
-        "description": "Both Popol and Kupa enter an enraged state for 12 seconds, gaining 50% attack speed, 15% movement speed, and empowering skills."
+        "energyCost": "100 Mana",
+        "description": "Popol and Kupa enter the Enraged state for 9 seconds. Kupa immediately recovers full HP and transforms into Alpha Wolf Form, gaining extra Max HP and enhancing his other skills."
       }
     ]
   },
@@ -7531,7 +7535,7 @@ export const HERO_SKILLS_DATA: Record<string, HeroSkillRecord> = {
         ],
         "cooldown": "7.0s",
         "energyCost": "70 Mana",
-        "description": "Hurls her puppet Muddles forward, linking nearby enemy heroes; attacking Muddles transfers 70% damage to all linked heroes."
+        "description": "Hurls her puppet Muddles forward, linking nearby enemy heroes; attacking Muddles transfers 50%–60% damage (and matching Attack Effect inheritance) to all linked heroes."
       },
       {
         "id": "ultimate",
@@ -7990,7 +7994,7 @@ export const HERO_SKILLS_DATA: Record<string, HeroSkillRecord> = {
       "Slow"
     ],
     "mobility": [
-      "Lightning Bomb Dash"
+      "Soaring Wings Dash"
     ],
     "damageCharacteristics": [
       "Magic Suppression",
@@ -8022,29 +8026,29 @@ export const HERO_SKILLS_DATA: Record<string, HeroSkillRecord> = {
       },
       {
         "id": "skill2",
-        "name": "Lightning Bomb",
+        "name": "Soaring Wings",
         "type": "Skill 2",
         "tags": [
           "Blink",
-          "Lightning Orbs",
-          "Slow"
+          "Soaring",
+          "Stun"
         ],
-        "cooldown": "12.0s",
+        "cooldown": "14.0s",
         "energyCost": "65 Mana",
-        "description": "Dashes in target direction, leaving behind 3 lightning orbs that detonate to damage and slow pursuers."
+        "description": "Dashes to the target area with Control Immunity, knocking back and stunning nearby enemies for 0.5s before entering the Soaring state (6.6s, ignores obstacles, +15% Movement Speed, improved turning speed). Enhanced Basic Attacks while moving and Skill 2 hits on minions or enemies extend the Soaring state."
       },
       {
         "id": "ultimate",
-        "name": "Divine Judgment",
+        "name": "Divine Binding",
         "type": "Ultimate",
         "tags": [
           "Crowd Control",
-          "Suppress",
-          "Drag"
+          "Area Bind",
+          "Pull"
         ],
-        "cooldown": "50.0s",
+        "cooldown": "70.0s",
         "energyCost": "120 Mana",
-        "description": "Suppresses an enemy hero for 1.5 seconds, dragging them along as Kaja moves with bonus movement speed."
+        "description": "Hurls a Primal Lightning Lasso at the target area; after a brief delay, traps all enemy heroes inside for 2.5s (targets with Control Immunity cannot escape the area when it takes effect). While active, Kaja can drag and shrink the lasso to pull enemies at the boundary."
       }
     ]
   },

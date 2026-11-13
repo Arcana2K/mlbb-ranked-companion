@@ -5,11 +5,11 @@ import { PatchConfig } from '../types/mlbb';
  * Tracks the current live verified patch, release dates, and verification timestamps.
  */
 export const CURRENT_PATCH_CONFIG: PatchConfig = {
-  latestOriginalServerPatch: 'Patch 2.2.16a',
-  patchReleaseDate: '2026-10-14',
-  databaseVerificationDate: '2026-11-08',
+  latestOriginalServerPatch: 'Patch 2.2.23',
+  patchReleaseDate: '2026-11-11',
+  databaseVerificationDate: '2026-11-11',
   officialSourceUrl: 'https://play.mobilelegends.com/lore/news',
-  archiveSourceUrl: 'https://liquipedia.net/mobilelegends/Portal:Patches',
+  archiveSourceUrl: 'https://mlbbhub.com/patch-notes/original/2.2.23',
   environment: 'Original Server'
 };
 
@@ -27,6 +27,14 @@ export interface HistoricalPatchMeta {
  * Used for timeline tracking, audit checks, and future patch registration.
  */
 export const HISTORICAL_PATCH_REGISTRY: HistoricalPatchMeta[] = [
+  {
+    patchVersion: 'Patch 2.2.23',
+    releaseDate: '2026-11-11',
+    majorTheme: 'Hero Revamp: Popol and Kupa, EXP/Gold Lane Meta Realignment',
+    sourceUrl: 'https://mlbbhub.com/patch-notes/original/2.2.23',
+    sourceType: 'secondary',
+    sourceName: 'MLBBHub Patch Archive'
+  },
   {
     patchVersion: 'Patch 2.2.16a',
     releaseDate: '2026-10-14',

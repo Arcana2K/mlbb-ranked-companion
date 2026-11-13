@@ -184,7 +184,7 @@ export interface Hero {
   strengths: string[];
   weaknesses: string[];
 
-  // Verified Gameplay Data (Current Original Server Patch 2.2.16a)
+  // Verified Gameplay Data (Current Original Server Patch 2.2.23)
   skills?: HeroSkill[];
   gameplayMechanics?: HeroGameplayMechanics;
 
