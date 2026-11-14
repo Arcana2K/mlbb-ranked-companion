@@ -26,7 +26,7 @@ export const HERO_PATCH_HISTORY: Record<string, HeroPatchChange[]> = {
       type: 'rework',
       title: 'Icefield Companions Hero Rework',
       affectedSkillOrAttribute: 'Complete Hero Kit (Passive, Skill 1, Skill 2, Skill 3, Ultimate)',
-      previousValue: 'Pre-revamp kit with limited mobility, static Kupa downtime after defeat, and 12s Enraged Ultimate',
+      previousValue: 'Pre-revamp kit with limited mobility, limited skill combo potential, and long Kupa downtime after defeat',
       newValue: 'Level-scaling Kupa with out-of-combat regen & prayer revival, Skill 2 riding mechanic, and 9s Alpha Wolf Ultimate',
       summary: 'Comprehensive hero rework improving mobility, coordinated combos, and Kupa uptime. Kupa now scales with Popol’s level and recovers HP out of combat, Popol can ride Kupa via Skill 2, and Ultimate enters Enraged Alpha Wolf Form for 9s.',
       details: [

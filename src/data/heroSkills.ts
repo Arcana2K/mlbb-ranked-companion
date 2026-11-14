@@ -330,9 +330,8 @@ export const HERO_SKILLS_DATA: Record<string, HeroSkillRecord> = {
           "Buff",
           "Stun"
         ],
-        "cooldown": "12.0s",
         "energyCost": "75 Mana",
-        "description": "Ejects from his Mecha Sentry to gain movement speed and slow immunity. Merging back stuns nearby enemies."
+        "description": "Ejects from his Mecha Sentry, gaining 30% movement speed and slow immunity; merging back deals Magic Damage and stuns nearby enemies for 0.8s."
       },
       {
         "id": "ultimate",
@@ -343,9 +342,9 @@ export const HERO_SKILLS_DATA: Record<string, HeroSkillRecord> = {
           "Crowd Control",
           "Displacement"
         ],
-        "cooldown": "45.0s",
+        "cooldown": "55.0s",
         "energyCost": "130 Mana",
-        "description": "Hurls chains to tether surrounding enemy heroes, channeling briefly before leaping and slamming all chained targets into a designated landing spot."
+        "description": "Hurls chains around himself and channels, dealing Magic Damage and slowing enemy heroes by 40% for 3s before dragging and slamming them into a designated landing spot."
       }
     ]
   },
@@ -964,8 +963,8 @@ export const HERO_SKILLS_DATA: Record<string, HeroSkillRecord> = {
           "Damage Stacking"
         ],
         "cooldown": "4.0s",
-        "energyCost": "40 Mana",
-        "description": "Releases two orbiting energy blades that deal magic damage and reduce enemy physical and magic attack."
+        "energyCost": "60 Mana",
+        "description": "Releases two orbiting energy blades that deal Magic Damage and slow enemies hit by 30% for 2s."
       },
       {
         "id": "skill2",
@@ -977,7 +976,7 @@ export const HERO_SKILLS_DATA: Record<string, HeroSkillRecord> = {
         ],
         "cooldown": "10.0s",
         "energyCost": "80 Mana",
-        "description": "Dashes in target direction, gaining a shield and detonating to deal magic damage upon shield expiration."
+        "description": "Dashes in target direction, gaining a shield for 4s and detonating to deal Magic Damage upon shield expiration or destruction."
       },
       {
         "id": "ultimate",
@@ -988,9 +987,9 @@ export const HERO_SKILLS_DATA: Record<string, HeroSkillRecord> = {
           "Cleanse",
           "Heal"
         ],
-        "cooldown": "36.0s",
+        "cooldown": "42.0s",
         "energyCost": "100 Mana",
-        "description": "Instantly purges all slow effects, recovers HP, and gains bonus movement speed and maximum Radiance stacks."
+        "description": "Purges slow effects on himself, recovers HP, gains 60% decaying movement speed for 8s, gains 5 Radiance stacks, and increases shields received and HP Regen by 20% for 8s."
       }
     ]
   },
@@ -1083,46 +1082,44 @@ export const HERO_SKILLS_DATA: Record<string, HeroSkillRecord> = {
           "Debuff",
           "Slow"
         ],
-        "description": "Skills apply Sticky stacks that slow enemy movement speed by 6% per stack and reduce their damage output against Gloo."
+        "description": "Skills apply Sticky stacks that slow enemy movement speed by 4% for 6s (up to 5 stacks) and reduce their damage dealt to Gloo by 3% per stack."
       },
       {
         "id": "skill1",
-        "name": "Pass, Pass",
+        "name": "Slam, Slam",
         "type": "Skill 1",
         "tags": [
           "AoE",
           "Crowd Control",
           "Immobilize"
         ],
-        "cooldown": "8.0s",
-        "energyCost": "50 Mana",
-        "description": "Slams the ground and leaves a Goo. Touching the Goo detonates it to reset the skill and immobilize enemies."
+        "cooldown": "10.0s",
+        "energyCost": "25 Mana",
+        "description": "Slams the ground and leaves a Goo that explodes after 3s (230–380 + 11% Extra HP Magic Damage), immobilizing enemies for 0.6s. Touching the Goo detonates it immediately, resets this skill's cooldown, and recovers HP."
       },
       {
         "id": "skill2",
-        "name": "Slam, Slam",
+        "name": "Spread, Spread",
         "type": "Skill 2",
         "tags": [
           "Blink",
           "Displacement",
           "Immobilize"
         ],
-        "cooldown": "10.0s",
-        "energyCost": "60 Mana",
-        "description": "Stretches forward to deal magic damage; hitting a Goo drags Gloo to its location, immobilizing enemies in his path."
+        "cooldown": "12.0s",
+        "energyCost": "80 Mana",
+        "description": "Splits into Goos in a fan-shaped area, dealing Magic Damage and immobilizing enemies for 0.5s; hitting a Goo drags Gloo toward it and pulls enemies along."
       },
       {
         "id": "ultimate",
-        "name": "Split, Split / Grab, Grab",
+        "name": "Grab, Grab",
         "type": "Ultimate",
         "tags": [
           "Morph",
           "Host Attach",
           "Untargetable"
         ],
-        "cooldown": "45.0s",
-        "energyCost": "120 Mana",
-        "description": "Splits into mini goos gaining HP regen and speed. Attaches onto an enemy with full Sticky stacks to ride and redirect them."
+        "description": "Unlocked when an enemy hero reaches max Sticky stacks. Attaches to the host for up to 9s, recovering 20% Max HP and transferring 60% of damage taken (excluding Turret damage) to the host (5s cooldown if host dies)."
       }
     ]
   },
@@ -2004,15 +2001,15 @@ export const HERO_SKILLS_DATA: Record<string, HeroSkillRecord> = {
       },
       {
         "id": "skill2",
-        "name": "Spirit Combo",
+        "name": "Valkyrie Slash",
         "type": "Skill 2",
         "tags": [
-          "Multi-Cast",
-          "Shield",
-          "Airborne"
+          "Dash",
+          "Slow",
+          "Sacred Orbs"
         ],
-        "cooldown": "6.0s",
-        "description": "Dashes forward gaining a shield and striking enemies; can be cast up to 4 times consecutively with final strike knocking enemies airborne."
+        "cooldown": "0.396s",
+        "description": "Charges forward and slashes, dealing Physical Damage and slowing enemies by 30% for 0.5s (deals 50% damage to creeps). Has no base cooldown and consumes 2 Sacred Orbs per cast."
       },
       {
         "id": "ultimate",
@@ -2486,7 +2483,7 @@ export const HERO_SKILLS_DATA: Record<string, HeroSkillRecord> = {
           "Shield",
           "Basic Attack"
         ],
-        "description": "Every 2 basic attacks, transforms damage from his next attack into a protective shield lasting 3 seconds."
+        "description": "Every 8s, gains a shield equal to 350 (+3 per Soul Steal stack) for 3s on his next Basic Attack and gains 60% Movement Speed for 1s."
       },
       {
         "id": "skill1",
@@ -2496,9 +2493,9 @@ export const HERO_SKILLS_DATA: Record<string, HeroSkillRecord> = {
           "Stacking",
           "Burst"
         ],
-        "cooldown": "5.0s",
+        "cooldown": "4.0s",
         "energyCost": "45 Mana",
-        "description": "Empowers his next basic attack. Killing minions, creeps, or heroes permanently increases Soul Steal damage stacks."
+        "description": "Empowers his next basic attack and grants 20% Movement Speed when moving toward enemy heroes. Eliminating units permanently increases Soul Steal stacks (up to 1000)."
       },
       {
         "id": "skill2",
@@ -2506,12 +2503,11 @@ export const HERO_SKILLS_DATA: Record<string, HeroSkillRecord> = {
         "type": "Skill 2",
         "tags": [
           "Damage Reduction",
-          "Speed Boost",
           "Stun"
         ],
         "cooldown": "8.0s",
-        "energyCost": "60 Mana",
-        "description": "Gains 30%–55% damage reduction and 20% speed; explodes after 2 seconds to stun surrounding enemies."
+        "energyCost": "80 Mana",
+        "description": "Assumes a defensive stance gaining 30%–55% damage reduction for 2s or until canceled; explodes to stun surrounding enemies for 0.5–1s."
       },
       {
         "id": "ultimate",
@@ -2932,8 +2928,8 @@ export const HERO_SKILLS_DATA: Record<string, HeroSkillRecord> = {
           "AoE",
           "Damage"
         ],
-        "cooldown": "6.0s",
-        "description": "Releases an energy surge forward, dealing Physical Damage to enemies in her path with increased damage to minions."
+        "cooldown": "8.0s",
+        "description": "Releases an energy surge forward, dealing Physical Damage (+55% Total Physical Attack bonus) to enemies in her path and 150%–200% damage to minions."
       },
       {
         "id": "skill2",
@@ -2944,8 +2940,8 @@ export const HERO_SKILLS_DATA: Record<string, HeroSkillRecord> = {
           "Mobility",
           "Slow"
         ],
-        "cooldown": "8.0s",
-        "description": "Dashes in a target direction with a narrowed path, unleashing a wide-range claw strike upon reaching max range or colliding with a non-minion enemy, slowing enemies hit. Cooldown resets automatically whenever an HP bar is lost."
+        "cooldown": "9.0s",
+        "description": "Dashes in a target direction with a narrowed path (-20% width), dealing 60–240 (+40% Extra Physical Attack) Physical Damage and slowing enemy heroes hit by 50% for 1s. Cooldown resets whenever an HP bar is depleted."
       },
       {
         "id": "ultimate",
@@ -2957,8 +2953,8 @@ export const HERO_SKILLS_DATA: Record<string, HeroSkillRecord> = {
           "Knockback",
           "Burst"
         ],
-        "cooldown": "30.0s",
-        "description": "Charges directly at a target enemy hero, dealing Physical Damage, stunning the target, and knocking back surrounding nearby enemies."
+        "cooldown": "42.0s",
+        "description": "Charges directly at a target enemy hero, dealing Physical Damage, stunning them for 1s, and knocking back nearby enemies."
       }
     ]
   },
@@ -3350,14 +3346,14 @@ export const HERO_SKILLS_DATA: Record<string, HeroSkillRecord> = {
     ]
   },
   "lukas": {
-    "resourceType": "Adrenaline",
+    "resourceType": "Resolve",
     "crowdControl": [
       "Shockwave",
       "Stun",
       "Slow"
     ],
     "mobility": [
-      "Beast Rush"
+      "Flash Step"
     ],
     "damageCharacteristics": [
       "Physical AoE",
@@ -3366,48 +3362,48 @@ export const HERO_SKILLS_DATA: Record<string, HeroSkillRecord> = {
     "skills": [
       {
         "id": "passive",
-        "name": "Sacred Beast Awakening",
+        "name": "Hero's Resolve",
         "type": "Passive",
         "tags": [
           "Transformation",
-          "Max HP Buff"
+          "Resolve"
         ],
-        "description": "Builds Adrenaline during combat to transform into the Sacred Beast, gaining bonus max HP, damage, and CC resilience."
+        "description": "Gains 0.5 Resolve per second and 3.5 Resolve when dealing damage to heroes. At 100 Resolve, can transform into Sacred Beast form, boosting combat attributes until Resolve depletes."
       },
       {
         "id": "skill1",
-        "name": "Primal Cleave",
+        "name": "Flash Combo",
         "type": "Skill 1",
         "tags": [
           "AoE",
-          "Slow"
+          "Heal",
+          "Stun"
         ],
         "cooldown": "5.5s",
-        "description": "Cleaves ground ahead, dealing physical damage and slowing targets in a frontal cone."
+        "description": "Consumes Vigor stacks (up to 2) to unleash Pulverize (400–800 + 60% Total Physical Attack Physical Damage, recovering 8% Max HP on hero/minion hit) followed by spinning tonfa strikes (95–235 + 25% Total Physical Attack each)."
       },
       {
         "id": "skill2",
-        "name": "Beast Rush",
+        "name": "Flash Step",
         "type": "Skill 2",
         "tags": [
           "Blink",
-          "Crowd Control",
-          "Stun"
+          "Dash",
+          "Speed Boost"
         ],
-        "cooldown": "8.5s",
-        "description": "Dashes forward; colliding with enemy heroes deals physical damage and stuns them briefly."
+        "cooldown": "12.0s",
+        "description": "Dashes in the target direction, empowering his next Basic Attack within 4s into Flash Strike to dash behind the enemy and gain 20% Movement Speed and Attack Speed for 4s."
       },
       {
         "id": "ultimate",
-        "name": "Roar of the Apex",
+        "name": "Unleash the Beast",
         "type": "Ultimate",
         "tags": [
-          "AoE",
+          "Transform",
           "Shockwave",
-          "Airborne"
+          "Control Immunity"
         ],
-        "cooldown": "40.0s",
-        "description": "Releases an earth-shattering roar and leaps forward, creating shockwaves that disrupt enemy formations."
+        "description": "Transforms into Sacred Beast form (gaining 30 Movement Speed and 15% increased attributes) and can recast to fire a Shockwave Blast dealing heavy Physical Damage."
       }
     ]
   },
@@ -4660,9 +4656,9 @@ export const HERO_SKILLS_DATA: Record<string, HeroSkillRecord> = {
           "Umbrella Throw",
           "Slow"
         ],
-        "cooldown": "4.5s",
-        "energyCost": "60 Mana",
-        "description": "Moves the Seimei Umbrella to a designated area, dealing magic damage and slowing enemies along the way."
+        "cooldown": "5.0s",
+        "energyCost": "45 Mana",
+        "description": "Moves the Seimei Umbrella to a designated area, dealing magic damage and slowing enemies by 60% for 0.5s (deals 130% damage to non-hero enemies). Automatically recalls if Kagura moves beyond maximum separation distance."
       },
       {
         "id": "skill2",
@@ -4674,7 +4670,7 @@ export const HERO_SKILLS_DATA: Record<string, HeroSkillRecord> = {
           "Umbrella Teleport"
         ],
         "cooldown": "12.0s",
-        "energyCost": "80 Mana",
+        "energyCost": "55 Mana",
         "description": "(With Umbrella) Purifies all crowd control and dashes away. (Without Umbrella) Teleports directly to the umbrella."
       },
       {
@@ -4686,9 +4682,9 @@ export const HERO_SKILLS_DATA: Record<string, HeroSkillRecord> = {
           "Crowd Control",
           "Knockback/Pull"
         ],
-        "cooldown": "32.0s",
-        "energyCost": "100 Mana",
-        "description": "(With Umbrella) Knocks back surrounding enemies. (Without Umbrella) Unleashes an umbrella vortex that pulls all enemies inward."
+        "cooldown": "36.0s",
+        "energyCost": "60 Mana",
+        "description": "(With Umbrella) Knocks back surrounding enemies and slows them by 60% for 0.5s. (Without Umbrella) Unleashes an umbrella vortex that pulls all enemies inward."
       }
     ]
   },
@@ -4714,7 +4710,7 @@ export const HERO_SKILLS_DATA: Record<string, HeroSkillRecord> = {
           "Skill Evolution",
           "Transcendence State"
         ],
-        "description": "Hitting enemies with skills grants up to 60% decaying Movement Speed and enhances his skills across 3 stages, expanding skill widths and entering Transcendence for 5s."
+        "description": "Hitting enemy heroes with skills grants 60% decaying Movement Speed for 1.2s and enhances his skills across 3 stages, entering Transcendence for 5s."
       },
       {
         "id": "skill1",
@@ -4724,9 +4720,9 @@ export const HERO_SKILLS_DATA: Record<string, HeroSkillRecord> = {
           "Piercing Laser",
           "AoE"
         ],
-        "cooldown": "6.0s",
-        "energyCost": "50 Mana",
-        "description": "Fires a mystic bullet that deals magic damage and extends its range each time it hits an enemy or Mystic Field."
+        "cooldown": "6.5s",
+        "energyCost": "45 Mana",
+        "description": "Fires a mystic bullet that deals magic damage and extends its range each time it hits an enemy or Mystic Field (up to 5 times)."
       },
       {
         "id": "skill2",
@@ -4736,9 +4732,9 @@ export const HERO_SKILLS_DATA: Record<string, HeroSkillRecord> = {
           "Zone Barrier",
           "Immobilize"
         ],
-        "cooldown": "12.0s",
-        "energyCost": "70 Mana",
-        "description": "Creates a mystic barrier that speeds up allies; hitting it with other skills activates and expands Mystic Field to immobilize enemies and deal 440–690 (+130% Total Magic Power) AoE magic damage."
+        "cooldown": "13.0s",
+        "energyCost": "80 Mana",
+        "description": "Creates a mystic barrier for 5s that slows enemies by 50% and speeds up allies by 50%; hitting it with other skills activates Mystic Field for 3s, dealing 440–690 (+130% Total Magic Power) AoE magic damage and immobilizing enemies for 0.8s."
       },
       {
         "id": "ultimate",
@@ -4748,9 +4744,9 @@ export const HERO_SKILLS_DATA: Record<string, HeroSkillRecord> = {
           "Global Laser",
           "Magic Burst"
         ],
-        "cooldown": "48.0s",
+        "cooldown": "56.0s",
         "energyCost": "120 Mana",
-        "description": "Fires a global beam of light across the entire battlefield, dealing immense magic damage to all enemies in a straight line."
+        "description": "Fires a global beam of light across the entire battlefield, dealing immense magic damage to all enemies in a straight line and immediately entering Transcendence."
       }
     ]
   },
@@ -5040,8 +5036,8 @@ export const HERO_SKILLS_DATA: Record<string, HeroSkillRecord> = {
           "Order Stance"
         ],
         "cooldown": "2.0s",
-        "energyCost": "50 Mana",
-        "description": "Shoots starlight rain on nearby enemies, dealing magic damage and healing Lunox for each target hit."
+        "energyCost": "30 Mana",
+        "description": "Shoots starlight rain on nearby enemies, dealing magic damage and healing Lunox for each target hit (doubled against enemy heroes). Grants Power of Order."
       },
       {
         "id": "skill2",
@@ -5052,8 +5048,20 @@ export const HERO_SKILLS_DATA: Record<string, HeroSkillRecord> = {
           "Chaos Stance"
         ],
         "cooldown": "2.0s",
-        "energyCost": "50 Mana",
-        "description": "Unleashes chaos energy forward, dealing magic damage plus 3.5%–5% of the target's Max HP (2.1%–3% against creeps)."
+        "energyCost": "30 Mana",
+        "description": "Unleashes chaos energy forward, dealing magic damage plus 3.5%–5% of the target's Max HP (2.1%–3% against creeps). Grants Power of Chaos."
+      },
+      {
+        "id": "skill3",
+        "name": "Cosmic Fission",
+        "type": "Skill 3",
+        "tags": [
+          "AoE",
+          "Slow"
+        ],
+        "cooldown": "10.0s",
+        "energyCost": "70 Mana",
+        "description": "Channels the power of Order and Chaos in the target direction, dealing Magic Damage and slowing enemies by 40% for 2s."
       },
       {
         "id": "ultimate",
@@ -5063,9 +5071,9 @@ export const HERO_SKILLS_DATA: Record<string, HeroSkillRecord> = {
           "Morph",
           "Invincibility / Rapid Chaos"
         ],
-        "cooldown": "20.0s",
-        "energyCost": "100 Mana",
-        "description": "(Order) Becomes a radiant light orb invulnerable to all damage while pulsing magic. (Chaos) Dashes and removes Chaos Assault cooldown."
+        "cooldown": "30.0s",
+        "energyCost": "120 Mana",
+        "description": "(Order) Becomes a radiant light orb invulnerable to all damage while pulsing magic. (Chaos) Dashes (-50% foreswing), deals 150–300 (+135% Total Magic Power) Magic Damage, and removes Chaos Assault cooldown."
       }
     ]
   },
@@ -6736,7 +6744,7 @@ export const HERO_SKILLS_DATA: Record<string, HeroSkillRecord> = {
           "True Damage",
           "% Max HP"
         ],
-        "description": "Basic attacks or skills add Lightwheel Marks; at 5 marks, detonates to deal 6%–10% of target's Max HP as True Damage."
+        "description": "Basic attacks or skills add Lightwheel Marks; at 5 marks, detonates to deal target Max HP True Damage."
       },
       {
         "id": "skill1",
@@ -6747,8 +6755,8 @@ export const HERO_SKILLS_DATA: Record<string, HeroSkillRecord> = {
           "Continuous Slow"
         ],
         "cooldown": "8.0s",
-        "energyCost": "60 Mana",
-        "description": "Releases a spinning flywheel forward that stops at destination to continuously damage and slow enemies."
+        "energyCost": "65 Mana",
+        "description": "Releases a spinning flywheel forward (20% Total Physical Attack bonus) that stops at destination or hero hit to continuously damage (10% Total Physical Attack bonus) and slow enemies by 80% for 1s."
       },
       {
         "id": "skill2",
@@ -6759,7 +6767,7 @@ export const HERO_SKILLS_DATA: Record<string, HeroSkillRecord> = {
           "Lightwheel Throw"
         ],
         "cooldown": "4.5s",
-        "energyCost": "45 Mana",
+        "energyCost": "35 Mana",
         "description": "Dashes in target direction and detects nearby enemy heroes throughout the dash (or creeps and minions at the end if no heroes are detected) to release a lightwheel and apply Lightwheel Marks."
       },
       {
@@ -6770,9 +6778,9 @@ export const HERO_SKILLS_DATA: Record<string, HeroSkillRecord> = {
           "Dual Lightwheels",
           "Speed Buff"
         ],
-        "cooldown": "30.0s",
+        "cooldown": "35.0s",
         "energyCost": "100 Mana",
-        "description": "Enters dual-wielding mode for 6-10s, throwing two lightwheels with every basic attack and gaining 30% movement speed."
+        "description": "Enters Dual Wield state for 10s, gaining 30% movement speed and throwing 2 lightwheels (50 base damage per lightwheel) with each basic attack."
       }
     ]
   },
@@ -7505,12 +7513,12 @@ export const HERO_SKILLS_DATA: Record<string, HeroSkillRecord> = {
     "skills": [
       {
         "id": "passive",
-        "name": "Doll Snatcher",
+        "name": "Doll Buster",
         "type": "Passive",
         "tags": [
           "Damage Amp against Minions/Summons"
         ],
-        "description": "Deals 125% extra damage to minions, creeps, and summoned units."
+        "description": "Deals 125% damage to minions, creeps, and summoned units."
       },
       {
         "id": "skill1",
@@ -7520,9 +7528,9 @@ export const HERO_SKILLS_DATA: Record<string, HeroSkillRecord> = {
           "Blink",
           "Attack Speed Buff"
         ],
-        "cooldown": "8.5s",
-        "energyCost": "60 Mana",
-        "description": "Dashes in target direction, gaining 50%–75% attack speed for 3 seconds and dragging Muddles and Giggles along."
+        "cooldown": "5.0s",
+        "energyCost": "30 Mana",
+        "description": "Slides forward and boosts Attack Speed for 2.5 seconds while moving Muddles and Cuddles."
       },
       {
         "id": "skill2",
@@ -7533,21 +7541,21 @@ export const HERO_SKILLS_DATA: Record<string, HeroSkillRecord> = {
           "Damage Link",
           "Slow"
         ],
-        "cooldown": "7.0s",
+        "cooldown": "9.0s",
         "energyCost": "70 Mana",
-        "description": "Hurls her puppet Muddles forward, linking nearby enemy heroes; attacking Muddles transfers 50%–60% damage (and matching Attack Effect inheritance) to all linked heroes."
+        "description": "Hurls her puppet Muddles forward, linking nearby enemy heroes for up to 6s and slowing them by 60% (decaying over 1.5s); attacking Muddles transfers 50%–60% damage (and matching Attack Effect inheritance) to all linked heroes."
       },
       {
         "id": "ultimate",
-        "name": "Cuddles, Protect Me!",
+        "name": "Go Away!",
         "type": "Ultimate",
         "tags": [
           "Anti-Melee Barrier",
           "Knockback"
         ],
-        "cooldown": "40.0s",
-        "energyCost": "110 Mana",
-        "description": "Summons protective barrier Giggles that pushes away and continuously blocks all enemy melee heroes from entering for 4 seconds."
+        "cooldown": "50.0s",
+        "energyCost": "120 Mana",
+        "description": "Summons protective barrier Cuddles for 4 seconds, gaining a shield and knocking back enemies attempting to enter the field."
       }
     ]
   },
@@ -7988,28 +7996,30 @@ export const HERO_SKILLS_DATA: Record<string, HeroSkillRecord> = {
     ]
   },
   "kaja": {
-    "resourceType": "Mana",
+    "resourceType": "Cooldown-Only",
     "crowdControl": [
-      "Suppress",
+      "Area Bind",
+      "Pull",
+      "Stun",
       "Slow"
     ],
     "mobility": [
       "Soaring Wings Dash"
     ],
     "damageCharacteristics": [
-      "Magic Suppression",
+      "Magic Control",
       "Damage Reduction Debuff"
     ],
     "skills": [
       {
         "id": "passive",
-        "name": "Wrath Sanction",
+        "name": "Wings of Lightning",
         "type": "Passive",
         "tags": [
-          "Paralyze",
+          "Paralysis",
           "Damage Reduction Debuff"
         ],
-        "description": "Every 6 seconds, enhances his basic attack to strike lightning that reduces enemy damage dealt by up to 24%."
+        "description": "Skill damage applies Paralysis to enemy units, briefly slowing heroes or summoned units and reducing their damage dealt by 8% for 5s."
       },
       {
         "id": "skill1",
@@ -8020,9 +8030,8 @@ export const HERO_SKILLS_DATA: Record<string, HeroSkillRecord> = {
           "Heal",
           "Slow"
         ],
-        "cooldown": "6.0s",
-        "energyCost": "50 Mana",
-        "description": "Releases an expanding electric ring that contracts, dealing magic damage and healing Kaja for each enemy struck."
+        "cooldown": "5.5s",
+        "description": "Summons a ring of Primal Lightning that expands and returns, dealing Magic Damage and recovering HP to Kaja (subsequent hit healing reduced to 33%)."
       },
       {
         "id": "skill2",
@@ -8034,8 +8043,7 @@ export const HERO_SKILLS_DATA: Record<string, HeroSkillRecord> = {
           "Stun"
         ],
         "cooldown": "14.0s",
-        "energyCost": "65 Mana",
-        "description": "Dashes to the target area with Control Immunity, knocking back and stunning nearby enemies for 0.5s before entering the Soaring state (6.6s, ignores obstacles, +15% Movement Speed, improved turning speed). Enhanced Basic Attacks while moving and Skill 2 hits on minions or enemies extend the Soaring state."
+        "description": "Dashes to the target area with Control Immunity, knocking back and stunning nearby enemies for 0.5s before entering the Soaring state (6.6s, ignores obstacles, +15% Movement Speed, improved turning speed; Skill 2 cooldown becomes 4s). Enhanced Basic Attacks while moving (+0.2s) and Skill 2 hits on enemies or minions (+2.6s) extend the Soaring state."
       },
       {
         "id": "ultimate",
@@ -8047,7 +8055,6 @@ export const HERO_SKILLS_DATA: Record<string, HeroSkillRecord> = {
           "Pull"
         ],
         "cooldown": "70.0s",
-        "energyCost": "120 Mana",
         "description": "Hurls a Primal Lightning Lasso at the target area; after a brief delay, traps all enemy heroes inside for 2.5s (targets with Control Immunity cannot escape the area when it takes effect). While active, Kaja can drag and shrink the lasso to pull enemies at the boundary."
       }
     ]
