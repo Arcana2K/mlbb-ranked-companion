@@ -271,7 +271,7 @@ export function validateHeroCatalog(heroes: Hero[]): HeroCatalogValidationReport
         (p) =>
           p.patchVersion === CURRENT_PATCH_CONFIG.latestOriginalServerPatch &&
           p.verificationStatus === 'verified' &&
-          p.serverType !== 'advance'
+          p.serverType === 'original'
       );
 
       // Verify status expectations against patch records and audit registry
@@ -562,11 +562,24 @@ export function validateHeroCatalog(heroes: Hero[]): HeroCatalogValidationReport
             }
           }
           if (patch.patchVersion === CURRENT_PATCH_CONFIG.latestOriginalServerPatch) {
-            if (patch.serverType === 'advance') {
-              errors.push(`Hero ${h.id} active Original Server patch record "${patch.title}" is marked serverType="advance"`);
+            if (!patch.serverType || patch.serverType.trim() === '') {
+              errors.push(
+                `Hero ${h.id} active Original Server patch record "${patch.title}" is missing explicit serverType (expected "original")`
+              );
+            } else if (patch.serverType !== 'original') {
+              errors.push(
+                `Hero ${h.id} active Original Server patch record "${patch.title}" has invalid serverType="${patch.serverType}" (expected "original")`
+              );
             }
-            if (/\bbrawl\b|\bbrawl-only\b/i.test(`${patch.title} ${patch.summary} ${patch.details.join(' ')}`)) {
-              errors.push(`Hero ${h.id} active Original Server patch record "${patch.title}" references Brawl-only adjustments`);
+            const patchText = [
+              patch.title,
+              patch.summary,
+              ...(Array.isArray(patch.details) ? patch.details : [])
+            ].join(' ');
+            if (/\bbrawl\b|\bbrawl-only\b/i.test(patchText)) {
+              errors.push(
+                `Hero ${h.id} active Original Server patch record "${patch.title}" references Brawl-only adjustments`
+              );
             }
           }
         }
