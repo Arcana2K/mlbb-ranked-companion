@@ -305,9 +305,10 @@ export const HERO_SKILLS_DATA: Record<string, HeroSkillRecord> = {
         "tags": [
           "AoE",
           "Slow",
+          "Freeze",
           "Buff"
         ],
-        "description": "Generates Frigid Breath around himself whenever casting skills, slowing enemy attack and movement speeds while granting himself defense."
+        "description": "Generates Frigid Breath around himself for 4s whenever casting skills, slowing enemies' movement speed over 2s before freezing them for 0.5s (4s freeze cooldown) and granting 20 (+0.7% Extra HP) Physical & Magic Defense."
       },
       {
         "id": "skill1",
@@ -952,7 +953,7 @@ export const HERO_SKILLS_DATA: Record<string, HeroSkillRecord> = {
           "Heal",
           "Sustain"
         ],
-        "description": "Absorbs energy whenever taking damage to gain Radiance stacks, regenerating up to 20 stacks of HP per second."
+        "description": "Absorbs energy whenever taking damage to gain Radiance stacks (up to 20 stacks), regenerating HP per second. His Basic Attacks (including splash damage) deal Magic Damage scaling with Radiance stacks."
       },
       {
         "id": "skill1",
@@ -1993,11 +1994,11 @@ export const HERO_SKILLS_DATA: Record<string, HeroSkillRecord> = {
         "type": "Skill 1",
         "tags": [
           "Blink",
-          "Crowd Control",
+          "Shield",
           "Airborne"
         ],
         "cooldown": "8.0s",
-        "description": "Leaps to a target location, dealing physical damage and pulling enemies toward the center."
+        "description": "Leaps to a target location and strikes with her shield, gaining a 500 (+100% Total Physical Attack) shield, dealing Physical Damage, and knocking enemies airborne for 0.4s."
       },
       {
         "id": "skill2",
@@ -2017,11 +2018,11 @@ export const HERO_SKILLS_DATA: Record<string, HeroSkillRecord> = {
         "type": "Ultimate",
         "tags": [
           "Morph",
-          "Shield",
+          "Control Immunity",
           "Valkyrie Form"
         ],
         "cooldown": "60.0s",
-        "description": "Enters Valkyrie State instantly, gaining Control Immunity, 30 Movement Speed, maximum Sacred Orbs, a colossal shield, and splash basic attacks (100–200 + 70% Total Physical Attack)."
+        "description": "Dives toward the target area with Control Immunity, slowing enemies hit by 40% for 2s, and enters Valkyrie State for 10s with 30 Movement Speed and splash Basic Attacks (100–200 + 70% Total Physical Attack)."
       }
     ]
   },
@@ -2918,7 +2919,7 @@ export const HERO_SKILLS_DATA: Record<string, HeroSkillRecord> = {
           "Feral State",
           "Purify"
         ],
-        "description": "Possesses 3 distinct HP bars, clearing control effects and blocking lethal damage upon losing a bar. Dealing damage charges Feral energy. Skill hits replace an existing Wound with a new one in the direction of the hit; breaking a Wound triggers Feral State, granting Resilience, Attack Speed, Movement Speed, and enhanced wide-range claw strikes that restore HP."
+        "description": "Possesses 3 distinct HP bars, clearing control effects and blocking lethal damage upon losing a bar. Dealing damage charges Feral energy. Skill hits randomly replace one of the target's existing Wounds with a new one in the direction of the hit; breaking a Wound triggers Feral State, granting Resilience, Attack Speed, Movement Speed, and enhanced wide-range claw strikes dealing (2 + 0.5% Extra Physical Attack + 0.2 * Hero Level)% Max HP Extra Physical Damage and restoring 3%–6% Max HP."
       },
       {
         "id": "skill1",
@@ -5073,7 +5074,7 @@ export const HERO_SKILLS_DATA: Record<string, HeroSkillRecord> = {
         ],
         "cooldown": "30.0s",
         "energyCost": "120 Mana",
-        "description": "(Order) Becomes a radiant light orb invulnerable to all damage while pulsing magic. (Chaos) Dashes (-50% foreswing), deals 150–300 (+135% Total Magic Power) Magic Damage, and removes Chaos Assault cooldown."
+        "description": "(Order) Becomes a radiant light orb invulnerable to all damage while pulsing magic. (Chaos) Dashes (-50% foreswing), deals 150–300 (+135% Total Magic Power) Magic Damage, and greatly reduces Chaos Assault cooldown."
       }
     ]
   },

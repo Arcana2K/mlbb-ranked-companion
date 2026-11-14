@@ -268,7 +268,10 @@ export function validateHeroCatalog(heroes: Hero[]): HeroCatalogValidationReport
 
       // Category 4 Current Patch Audit Checks
       const hasActivePatchChangeRecord = (h.patchHistory || []).some(
-        (p) => p.patchVersion === CURRENT_PATCH_CONFIG.latestOriginalServerPatch && p.verificationStatus === 'verified'
+        (p) =>
+          p.patchVersion === CURRENT_PATCH_CONFIG.latestOriginalServerPatch &&
+          p.verificationStatus === 'verified' &&
+          p.serverType !== 'advance'
       );
 
       // Verify status expectations against patch records and audit registry
@@ -558,6 +561,14 @@ export function validateHeroCatalog(heroes: Hero[]): HeroCatalogValidationReport
               warnings.push(`Hero ${h.id} patch ${patch.patchVersion} date (${patch.date}) does not match registry release date (${expectedDate})`);
             }
           }
+          if (patch.patchVersion === CURRENT_PATCH_CONFIG.latestOriginalServerPatch) {
+            if (patch.serverType === 'advance') {
+              errors.push(`Hero ${h.id} active Original Server patch record "${patch.title}" is marked serverType="advance"`);
+            }
+            if (/\bbrawl\b|\bbrawl-only\b/i.test(`${patch.title} ${patch.summary} ${patch.details.join(' ')}`)) {
+              errors.push(`Hero ${h.id} active Original Server patch record "${patch.title}" references Brawl-only adjustments`);
+            }
+          }
         }
 
         if (!patch.date || !isValidCalendarDate(patch.date)) {
@@ -623,6 +634,13 @@ export function validateHeroCatalog(heroes: Hero[]): HeroCatalogValidationReport
       );
       if (hasDemonicEnergy && h.gameplayMechanics?.resourceType !== 'Demonic Energy') {
         errors.push(`Conflict: Granger has documented Demonic Energy rework but resourceType is "${h.gameplayMechanics?.resourceType}"`);
+      }
+    }
+
+    if (h.gameplayMechanics?.resourceType === 'Cooldown-Only') {
+      const manaSkills = (h.skills || []).filter((s) => s.energyCost && /\bmana\b/i.test(s.energyCost));
+      if (manaSkills.length > 0) {
+        errors.push(`Conflict: Hero ${h.id} has resourceType="Cooldown-Only" but defines Mana costs on skills (${manaSkills.map((s) => s.name).join(', ')})`);
       }
     }
 
